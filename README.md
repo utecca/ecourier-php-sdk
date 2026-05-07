@@ -22,15 +22,16 @@ composer require ecourier/sdk
 
 ## Getting Started
 
-Instantiate the connector with your API key. Keys starting with `pk_test_` hit the sandbox; `pk_live_` keys go to production.
+Instantiate the connector with your API key. The same API endpoint is used for both test and live — the key prefix determines the mode: `pk_test_` for test, `pk_live_` for production.
 
 ```php
 use Ecourier\Sdk\EcourierConnector;
 
-$ecourier = new EcourierConnector(apiKey: 'pk_live_your_key_here');
+// Test mode
+$ecourier = new EcourierConnector(apiKey: 'pk_test_your_key_here');
 
-// Sandbox mode
-$ecourier = new EcourierConnector(apiKey: 'pk_test_your_key_here', sandbox: true);
+// Production
+$ecourier = new EcourierConnector(apiKey: 'pk_live_your_key_here');
 ```
 
 All requests are authenticated automatically via `Authorization: Bearer` — you never touch headers yourself.

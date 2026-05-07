@@ -29,14 +29,11 @@ class EcourierConnector extends Connector implements HasPagination
 
     public function __construct(
         private readonly string $apiKey,
-        private readonly bool $sandbox = false,
     ) {}
 
     public function resolveBaseUrl(): string
     {
-        return $this->sandbox
-            ? 'https://sandbox.api.ecourier.io/v1'
-            : 'https://api.ecourier.io/v1';
+        return 'https://api.ecourier.io/v1';
     }
 
     protected function defaultAuth(): TokenAuthenticator
