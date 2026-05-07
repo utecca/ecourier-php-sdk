@@ -1,0 +1,8 @@
+/vendor/
+/node_modules/
+composer.lock
+.phpunit.cache/
+.pest/
+*.log
+.env
+.DS_Store

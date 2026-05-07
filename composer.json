@@ -1,0 +1,36 @@
+{
+    "name": "ecourier/sdk",
+    "description": "PHP SDK for the eCourier API built with Saloon",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.2",
+        "saloonphp/saloon": "^4.0",
+        "saloonphp/pagination-plugin": "^2.0"
+    },
+    "require-dev": {
+        "laravel/pao": "^1.0",
+        "laravel/pint": "^1.0",
+        "pestphp/pest": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ecourier\\Sdk\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Ecourier\\Sdk\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "pest"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
