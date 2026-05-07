@@ -3,7 +3,7 @@
 **A clean, modern PHP SDK for the [eCourier API](https://docs.ecourier.io), built with [Saloon](https://docs.saloon.dev).**
 
 [![Tests](https://github.com/bartoszpotmalnik/ecourier-php-sdk/actions/workflows/tests.yml/badge.svg)](https://github.com/bartoszpotmalnik/ecourier-php-sdk/actions/workflows/tests.yml)
-[![PHP](https://img.shields.io/badge/php-%5E8.2-blue)](https://www.php.net)
+[![PHP](https://img.shields.io/badge/php-%5E8.3-blue)](https://www.php.net)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 Send and receive electronic invoices through the eCourier network from your PHP application. The SDK wraps the full [eCourier REST API v1](https://docs.ecourier.io/api-reference/v1) and gives you typed responses, automatic pagination, and clear exceptions for every error case.
