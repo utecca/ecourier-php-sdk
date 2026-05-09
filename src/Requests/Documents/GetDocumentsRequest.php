@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Sdk\Requests\Documents;
 
-use DateTimeImmutable;
+use Ecourier\Sdk\Enums\DocumentStatus;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\PaginationPlugin\Contracts\Paginatable;
@@ -14,11 +14,11 @@ class GetDocumentsRequest extends Request implements Paginatable
     protected Method $method = Method::GET;
 
     public function __construct(
-        private readonly ?string $status = null,
-        private readonly ?string $direction = null,
-        private readonly ?DateTimeImmutable $from = null,
-        private readonly ?DateTimeImmutable $to = null,
-        private readonly int $perPage = 25,
+        private readonly ?DocumentStatus $status = null,
+        private readonly ?string $createdAt = null,
+        private readonly ?string $identityId = null,
+        private readonly ?string $sort = null,
+        private readonly int $perPage = 10,
     ) {}
 
     public function resolveEndpoint(): string
@@ -28,12 +28,22 @@ class GetDocumentsRequest extends Request implements Paginatable
 
     protected function defaultQuery(): array
     {
-        return array_filter([
-            'status' => $this->status,
-            'direction' => $this->direction,
-            'from' => $this->from?->format('Y-m-d'),
-            'to' => $this->to?->format('Y-m-d'),
-            'per_page' => $this->perPage,
-        ], fn($value) => $value !== null);
+        $query = ['per_page' => $this->perPage];
+
+        if ($this->sort !== null) {
+            $query['sort'] = $this->sort;
+        }
+
+        $filter = array_filter([
+            'status' => $this->status?->value,
+            'created_at' => $this->createdAt,
+            'identity_id' => $this->identityId,
+        ], fn($v) => $v !== null);
+
+        if (!empty($filter)) {
+            $query['filter'] = $filter;
+        }
+
+        return $query;
     }
 }

@@ -22,7 +22,7 @@ composer require ecourier/sdk
 
 ## Getting Started
 
-Instantiate the connector with your API key. The same API endpoint is used for both test and live — the key prefix determines the mode: `pk_test_` for test, `pk_live_` for production.
+Instantiate the connector with your API key. The key prefix determines the mode: `pk_test_` for test, `pk_live_` for production.
 
 ```php
 use Ecourier\Sdk\EcourierConnector;
@@ -79,29 +79,53 @@ Documents are the core of eCourier — they represent invoices and credit notes 
 
 ### Send a document as JSON
 
-The simplest way to send an invoice. eCourier converts the JSON payload to the correct XML schema for the target channel automatically.
+Build a typed `InvoiceDocumentData` payload and submit it to a specific channel. eCourier converts it to the correct XML schema automatically.
 
 ```php
-$response = $ecourier->documents()->sendJson([
-    'type'       => 'invoice',
-    'reference'  => 'INV-2024-001',
-    'issue_date' => '2024-06-01',
-    'currency'   => 'DKK',
-    'sender'     => ['cvr' => '12345678'],
-    'receiver'   => ['cvr' => '87654321'],
-    'lines'      => [
-        ['description' => 'Consulting', 'quantity' => 1, 'unit_price' => 1250.00],
+use Ecourier\Sdk\Data\Invoice\InvoiceDocumentData;
+use Ecourier\Sdk\Data\Invoice\InvoiceLineData;
+use Ecourier\Sdk\Data\Invoice\InvoicePartyData;
+use Ecourier\Sdk\Data\Invoice\InvoiceTotalsData;
+use Ecourier\Sdk\Data\Invoice\ParticipantIdentifier;
+use Ecourier\Sdk\Enums\Channel;
+use Ecourier\Sdk\Enums\Currency;
+use Ecourier\Sdk\Enums\DocumentType;
+use Ecourier\Sdk\Enums\IdentifierScheme;
+
+$invoice = new InvoiceDocumentData(
+    type: DocumentType::Invoice,
+    id: 'INV-2024-001',
+    issueDate: '2024-06-01',
+    currency: Currency::DKK,
+    supplier: new InvoicePartyData(
+        participant: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '12345678'),
+    ),
+    customer: new InvoicePartyData(
+        participant: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '87654321'),
+    ),
+    lines: [
+        new InvoiceLineData(id: 1),
     ],
-]);
+    totals: new InvoiceTotalsData(
+        subtotalAmount: '1000.00',
+        taxAmount: '250.00',
+        totalAmount: '1250.00',
+    ),
+);
+
+$response = $ecourier->documents()->sendJson(Channel::Peppol, $invoice);
 ```
 
 > **Note:** Validation is asynchronous. A `200` response means the document was accepted, not yet delivered. Use webhooks or poll `find()` to track delivery.
 
 ### Send a document as raw XML
 
-If you need full control over the XML schema, send the raw document directly.
+If you need full control over the XML schema, send the raw UBL document directly. All routing headers are required.
 
 ```php
+use Ecourier\Sdk\Enums\Channel;
+use Ecourier\Sdk\Enums\IdentifierScheme;
+
 $xml = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
 <Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2">
@@ -109,44 +133,59 @@ $xml = <<<XML
 </Invoice>
 XML;
 
-$response = $ecourier->documents()->sendXml($xml);
+$response = $ecourier->documents()->sendXml(
+    xml: $xml,
+    channel: Channel::Peppol,
+    senderScheme: IdentifierScheme::DK_CVR,
+    senderId: '12345678',
+    recipientScheme: IdentifierScheme::GLN,
+    recipientId: '5790000123456',
+);
 ```
 
 ### Get a single document
 
 ```php
+use Ecourier\Sdk\Enums\Channel;
+use Ecourier\Sdk\Enums\Currency;
+use Ecourier\Sdk\Enums\Direction;
+use Ecourier\Sdk\Enums\DocumentStatus;
+use Ecourier\Sdk\Enums\DocumentType;
+
 $document = $ecourier->documents()->find('doc_01xyz');
 
-echo $document->id;               // doc_01xyz
-echo $document->status;           // delivered
-echo $document->direction;        // outbound
-echo $document->reference;        // INV-2024-001
-echo $document->totalAmount;      // 1250.0
-echo $document->currency;         // DKK
-echo $document->sender->name;     // Acme Corporation
-echo $document->receiver->name;   // Beta Ltd
-echo $document->deliveredAt;      // 2024-06-01T10:05:00Z
+$document->id;              // 'doc_01xyz'
+$document->status;          // DocumentStatus::Delivered
+$document->direction;       // Direction::Send
+$document->type;            // DocumentType::Invoice
+$document->channel;         // Channel::NemHandel
+$document->reference;       // 'INV-2024-001'
+$document->totalAmount;     // 1250.0
+$document->currency;        // Currency::DKK
+$document->sender->name;    // 'Acme Corporation'
+$document->receiver->name;  // 'Beta Ltd'
 ```
 
 ### List documents (paginated)
 
-`list()` returns a lazy paginator — pages are fetched on demand and you iterate individual `DocumentData` items without thinking about pages at all.
+`list()` returns a lazy paginator — pages are fetched on demand as you iterate.
 
 ```php
 foreach ($ecourier->documents()->list()->items() as $document) {
-    echo $document->id . ': ' . $document->status . PHP_EOL;
+    echo $document->id . ': ' . $document->status->value . PHP_EOL;
 }
 ```
 
-Filter by status, direction, or date range:
+Filter by status, identity, or date:
 
 ```php
+use Ecourier\Sdk\Enums\DocumentStatus;
+
 $paginator = $ecourier->documents()->list(
-    status:    'delivered',
-    direction: 'outbound',
-    from:      '2024-01-01',
-    to:        '2024-12-31',
-    perPage:   50,
+    status:     DocumentStatus::Delivered,
+    createdAt:  '2024-06-01',
+    identityId: 'DK:CVR:12345678',
+    perPage:    50,
 );
 
 foreach ($paginator->items() as $document) {
@@ -158,7 +197,7 @@ Collect all results into an array:
 
 ```php
 $documents = iterator_to_array(
-    $ecourier->documents()->list(status: 'pending')->items()
+    $ecourier->documents()->list(status: DocumentStatus::Pending)->items()
 );
 ```
 
@@ -180,7 +219,6 @@ Get an HTML or PDF rendering (experimental):
 $html = $ecourier->documents()->renderAsHtml('doc_01xyz')->body();
 $pdf  = $ecourier->documents()->renderAsPdf('doc_01xyz')->body();
 
-// Save the PDF
 file_put_contents('invoice.pdf', $pdf);
 ```
 
@@ -191,11 +229,18 @@ file_put_contents('invoice.pdf', $pdf);
 Look up whether a company is reachable on the eCourier network and which document types they accept.
 
 ```php
-$participant = $ecourier->participants()->find('part_01ghi');
+use Ecourier\Sdk\Enums\Channel;
+use Ecourier\Sdk\Enums\IdentifierScheme;
 
-echo $participant->name;     // Beta Ltd
-echo $participant->scheme;   // GLN
-echo $participant->endpoint; // 5790000123456
+$participant = $ecourier->participants()->find(
+    channel: Channel::Peppol,
+    scheme: IdentifierScheme::GLN,
+    participantId: '5790000123456',
+);
+
+echo $participant->name;      // Beta Ltd
+echo $participant->scheme->value; // GLN
+echo $participant->endpoint;  // 5790000123456
 
 foreach ($participant->documentTypes as $type) {
     echo $type . PHP_EOL;
@@ -228,20 +273,37 @@ use Ecourier\Sdk\Exceptions\ValidationException;
 try {
     $document = $ecourier->documents()->find('doc_missing');
 } catch (NotFoundException $e) {
-    // document doesn't exist
     echo $e->getMessage();
 } catch (ValidationException $e) {
-    // inspect field-level errors
     foreach ($e->getErrors() as $field => $messages) {
         echo "{$field}: " . implode(', ', $messages) . PHP_EOL;
     }
 } catch (AuthenticationException $e) {
     // bad API key
 } catch (EcourierException $e) {
-    // everything else
-    $e->getResponse()->status(); // raw HTTP status
+    $e->getResponse()->status();
 }
 ```
+
+---
+
+## Enums
+
+All typed fields use PHP backed enums, giving you IDE autocomplete and preventing invalid values at the type level.
+
+| Enum | Values |
+|---|---|
+| `DocumentStatus` | `Pending`, `Ready`, `Delivered`, `Failed` |
+| `DocumentType` | `Invoice`, `CreditNote`, `ApplicationResponse`, `Other` |
+| `Direction` | `Send`, `Receive` |
+| `Channel` | `Peppol`, `NemHandel` |
+| `Currency` | `EUR`, `DKK`, `USD`, `GBP`, and 29 others (ISO 4217) |
+| `IdentifierScheme` | `DK_CVR`, `GLN`, `EU_VAT`, and 80+ others |
+| `TaxCategoryCode` | `S`, `AA`, `Z`, `E`, `AE`, `K`, `G`, `O`, `L`, `M` |
+| `PaymentMeansCode` | `CreditTransfer`, `DebitTransfer`, `PaymentToAccount` |
+| `AccountSchemeId` | `IBAN`, `DK_BBAN` |
+
+Enums serialize to their wire value automatically when used in requests. When the API returns an unrecognised value for an optional enum field, the SDK maps it to `null` rather than throwing.
 
 ---
 
@@ -253,13 +315,15 @@ The SDK is built on Saloon, which ships with a first-class mock client. No HTTP 
 
 ```php
 use Ecourier\Sdk\EcourierConnector;
+use Ecourier\Sdk\Enums\Direction;
+use Ecourier\Sdk\Enums\DocumentStatus;
 use Ecourier\Sdk\Requests\Documents\GetDocumentRequest;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
 $mockClient = new MockClient([
     GetDocumentRequest::class => MockResponse::make(
-        body: ['id' => 'doc_01xyz', 'status' => 'delivered', 'direction' => 'outbound'],
+        body: ['id' => 'doc_01xyz', 'status' => 'Delivered', 'direction' => 'Send'],
         status: 200,
     ),
 ]);
@@ -269,7 +333,8 @@ $ecourier->withMockClient($mockClient);
 
 $document = $ecourier->documents()->find('doc_01xyz');
 
-expect($document->status)->toBe('delivered');
+expect($document->status)->toBe(DocumentStatus::Delivered);
+expect($document->direction)->toBe(Direction::Send);
 ```
 
 ### Asserting requests were sent
@@ -294,7 +359,7 @@ $mockClient = new MockClient([
 
 $ecourier->withMockClient($mockClient);
 
-// This will throw NotFoundException
+// Throws NotFoundException
 $ecourier->companies()->find('comp_missing');
 ```
 
@@ -302,51 +367,72 @@ $ecourier->companies()->find('comp_missing');
 
 ## Data Objects
 
-All resources return typed DTOs with readonly properties, so your IDE can autocomplete everything.
+All resources return typed DTOs with readonly properties.
 
 ### `CompanyData`
 
-| Property | Type | Description |
-|---|---|---|
-| `$id` | `string` | Unique company ID |
-| `$name` | `string` | Company name |
-| `$cvr` | `?string` | Danish CVR number |
-| `$vat` | `?string` | VAT number |
-| `$country` | `?string` | ISO 3166-1 alpha-2 country code |
-| `$email` | `?string` | Contact email |
-| `$phone` | `?string` | Contact phone |
-| `$address` | `?AddressData` | Postal address |
-| `$createdAt` | `?string` | ISO 8601 timestamp |
-| `$updatedAt` | `?string` | ISO 8601 timestamp |
+| Property | Type |
+|---|---|
+| `$id` | `string` |
+| `$name` | `string` |
+| `$cvr` | `?string` |
+| `$vat` | `?string` |
+| `$country` | `?string` |
+| `$email` | `?string` |
+| `$phone` | `?string` |
+| `$address` | `?AddressData` |
+| `$createdAt` | `?DateTimeImmutable` |
+| `$updatedAt` | `?DateTimeImmutable` |
 
 ### `DocumentData`
 
-| Property | Type | Description |
-|---|---|---|
-| `$id` | `string` | Unique document ID |
-| `$status` | `string` | `pending`, `delivered`, `failed`, etc. |
-| `$direction` | `string` | `inbound` or `outbound` |
-| `$type` | `?string` | `invoice` or `credit_note` |
-| `$channel` | `?string` | Delivery channel (e.g. `nemhandel`) |
-| `$reference` | `?string` | Your invoice reference number |
-| `$issueDate` | `?string` | Invoice issue date |
-| `$totalAmount` | `?float` | Total invoice amount |
-| `$currency` | `?string` | ISO 4217 currency code |
-| `$sender` | `?PartyData` | Sending party |
-| `$receiver` | `?PartyData` | Receiving party |
-| `$deliveredAt` | `?string` | ISO 8601 delivery timestamp |
-| `$errors` | `?array` | Validation or delivery errors |
+| Property | Type |
+|---|---|
+| `$id` | `string` |
+| `$status` | `DocumentStatus` |
+| `$direction` | `Direction` |
+| `$type` | `?DocumentType` |
+| `$channel` | `?Channel` |
+| `$reference` | `?string` |
+| `$issueDate` | `?DateTimeImmutable` |
+| `$totalAmount` | `?float` |
+| `$currency` | `?Currency` |
+| `$sender` | `?PartyData` |
+| `$receiver` | `?PartyData` |
+| `$createdAt` | `?DateTimeImmutable` |
+| `$updatedAt` | `?DateTimeImmutable` |
+| `$deliveredAt` | `?DateTimeImmutable` |
+| `$errors` | `?array` |
 
 ### `ParticipantData`
 
-| Property | Type | Description |
+| Property | Type |
+|---|---|
+| `$id` | `string` |
+| `$name` | `string` |
+| `$scheme` | `?IdentifierScheme` |
+| `$endpoint` | `?string` |
+| `$country` | `?string` |
+| `$documentTypes` | `?array` |
+| `$createdAt` | `?DateTimeImmutable` |
+| `$updatedAt` | `?DateTimeImmutable` |
+
+### `InvoiceDocumentData` (request payload)
+
+| Property | Type | Required |
 |---|---|---|
-| `$id` | `string` | Unique participant ID |
-| `$name` | `string` | Participant name |
-| `$scheme` | `?string` | Identifier scheme (e.g. `GLN`) |
-| `$endpoint` | `?string` | Network endpoint identifier |
-| `$country` | `?string` | ISO 3166-1 alpha-2 country code |
-| `$documentTypes` | `?array` | Accepted document type URNs |
+| `$type` | `DocumentType` | Yes |
+| `$id` | `string` | Yes |
+| `$issueDate` | `string` | Yes |
+| `$currency` | `Currency` | Yes |
+| `$supplier` | `InvoicePartyData` | Yes |
+| `$customer` | `InvoicePartyData` | Yes |
+| `$lines` | `InvoiceLineData[]` | Yes |
+| `$totals` | `InvoiceTotalsData` | Yes |
+| `$uuid` | `?string` | No |
+| `$dueDate` | `?string` | No |
+| `$orderReference` | `?string` | No |
+| `$payment` | `?InvoicePaymentData` | No |
 
 ---
 
@@ -363,13 +449,11 @@ $response->status();    // 200
 $response->headers();   // response headers
 $response->body();      // raw body string
 $response->json();      // decoded array
-$response->array();     // alias for json()
-$response->throw();     // throw if failed
 ```
 
 ### Sending requests directly
 
-If you need to bypass the resource layer entirely, send requests directly through the connector:
+If you need to bypass the resource layer entirely:
 
 ```php
 use Ecourier\Sdk\Requests\Documents\GetDocumentRequest;
@@ -388,11 +472,8 @@ composer test
 Code style:
 
 ```bash
-# Check
-vendor/bin/pint --test
-
-# Fix
-vendor/bin/pint
+vendor/bin/pint --test  # check
+vendor/bin/pint         # fix
 ```
 
 ---

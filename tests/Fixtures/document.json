@@ -1,9 +1,9 @@
 {
     "id": "doc_01xyz",
-    "status": "delivered",
-    "direction": "outbound",
-    "type": "invoice",
-    "channel": "nemhandel",
+    "status": "Delivered",
+    "direction": "Send",
+    "type": "Invoice",
+    "channel": "NemHandel",
     "reference": "INV-2024-001",
     "issue_date": "2024-06-01",
     "total_amount": 1250.00,

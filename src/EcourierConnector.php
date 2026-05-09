@@ -14,12 +14,10 @@ use Ecourier\Sdk\Resources\ParticipantsResource;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector;
 use Saloon\Http\Response;
-use Saloon\PaginationPlugin\Contracts\HasPagination;
-use Saloon\PaginationPlugin\Paginator;
 use Saloon\Traits\Plugins\AcceptsJson;
 use Saloon\Traits\Plugins\HasTimeout;
 
-class EcourierConnector extends Connector implements HasPagination
+class EcourierConnector extends Connector
 {
     use AcceptsJson;
     use HasTimeout;
@@ -63,11 +61,6 @@ class EcourierConnector extends Connector implements HasPagination
                 default => EcourierException::fromResponse($response),
             };
         });
-    }
-
-    public function paginate(\Saloon\Http\Request $request): Paginator
-    {
-        return new \Ecourier\Sdk\Pagination\DocumentsPaginator($this, $request);
     }
 
     public function companies(): CompaniesResource

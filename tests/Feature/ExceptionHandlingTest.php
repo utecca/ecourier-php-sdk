@@ -2,7 +2,16 @@
 
 declare(strict_types=1);
 
+use Ecourier\Sdk\Data\Invoice\InvoiceDocumentData;
+use Ecourier\Sdk\Data\Invoice\InvoiceLineData;
+use Ecourier\Sdk\Data\Invoice\InvoicePartyData;
+use Ecourier\Sdk\Data\Invoice\InvoiceTotalsData;
+use Ecourier\Sdk\Data\Invoice\ParticipantIdentifier;
 use Ecourier\Sdk\EcourierConnector;
+use Ecourier\Sdk\Enums\Channel;
+use Ecourier\Sdk\Enums\Currency;
+use Ecourier\Sdk\Enums\DocumentType;
+use Ecourier\Sdk\Enums\IdentifierScheme;
 use Ecourier\Sdk\Exceptions\AuthenticationException;
 use Ecourier\Sdk\Exceptions\NotFoundException;
 use Ecourier\Sdk\Exceptions\ValidationException;
@@ -56,8 +65,19 @@ it('throws validation exception on 422 with errors', function () {
     $connector = new EcourierConnector(apiKey: 'pk_test_fake');
     $connector->withMockClient($mockClient);
 
+    $invoice = new InvoiceDocumentData(
+        type: DocumentType::Invoice,
+        id: 'INV-001',
+        issueDate: '2024-06-01',
+        currency: Currency::DKK,
+        supplier: new InvoicePartyData(participant: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '12345678')),
+        customer: new InvoicePartyData(participant: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '87654321')),
+        lines: [new InvoiceLineData(id: 1)],
+        totals: new InvoiceTotalsData('1000.00', '250.00', '1250.00'),
+    );
+
     try {
-        $connector->documents()->sendJson([]);
+        $connector->documents()->sendJson(Channel::Peppol, $invoice);
     } catch (ValidationException $e) {
         expect($e->getErrors())->toHaveKey('type');
         expect($e->getMessage())->toBe('Validation failed.');

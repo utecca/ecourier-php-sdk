@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Ecourier\Sdk\Resources;
 
 use Ecourier\Sdk\Data\DocumentData;
+use Ecourier\Sdk\Data\Invoice\InvoiceDocumentData;
+use Ecourier\Sdk\Enums\Channel;
+use Ecourier\Sdk\Enums\DocumentStatus;
+use Ecourier\Sdk\Enums\IdentifierScheme;
 use Ecourier\Sdk\Pagination\DocumentsPaginator;
 use Ecourier\Sdk\Requests\Documents\GetDocumentsRequest;
 use Ecourier\Sdk\Requests\Documents\GetDocumentRequest;
@@ -19,17 +23,17 @@ use Saloon\Http\Response;
 class DocumentsResource extends BaseResource
 {
     public function list(
-        ?string $status = null,
-        ?string $direction = null,
-        ?string $from = null,
-        ?string $to = null,
-        int $perPage = 25,
+        ?DocumentStatus $status = null,
+        ?string $createdAt = null,
+        ?string $identityId = null,
+        ?string $sort = null,
+        int $perPage = 10,
     ): DocumentsPaginator {
         $request = new GetDocumentsRequest(
             status: $status,
-            direction: $direction,
-            from: $from,
-            to: $to,
+            createdAt: $createdAt,
+            identityId: $identityId,
+            sort: $sort,
             perPage: $perPage,
         );
 
@@ -46,14 +50,27 @@ class DocumentsResource extends BaseResource
         return $this->get($document)->dto();
     }
 
-    public function sendJson(array $payload): Response
+    public function sendJson(Channel $channel, InvoiceDocumentData $document): Response
     {
-        return $this->connector->send(new SendDocumentAsJsonRequest($payload));
+        return $this->connector->send(new SendDocumentAsJsonRequest($channel, $document));
     }
 
-    public function sendXml(string $xml): Response
-    {
-        return $this->connector->send(new SendDocumentAsXmlRequest($xml));
+    public function sendXml(
+        string $xml,
+        Channel $channel,
+        IdentifierScheme $senderScheme,
+        string $senderId,
+        IdentifierScheme $recipientScheme,
+        string $recipientId,
+    ): Response {
+        return $this->connector->send(new SendDocumentAsXmlRequest(
+            xml: $xml,
+            channel: $channel,
+            senderScheme: $senderScheme,
+            senderId: $senderId,
+            recipientScheme: $recipientScheme,
+            recipientId: $recipientId,
+        ));
     }
 
     public function contentAsXml(string $document): Response

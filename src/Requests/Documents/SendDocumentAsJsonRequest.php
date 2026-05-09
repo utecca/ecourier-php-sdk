@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Ecourier\Sdk\Requests\Documents;
 
 use Ecourier\Sdk\Data\DocumentData;
+use Ecourier\Sdk\Data\Invoice\InvoiceDocumentData;
+use Ecourier\Sdk\Enums\Channel;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -18,7 +20,8 @@ class SendDocumentAsJsonRequest extends Request implements HasBody
     protected Method $method = Method::POST;
 
     public function __construct(
-        private readonly array $payload,
+        private readonly Channel $channel,
+        private readonly InvoiceDocumentData $document,
     ) {}
 
     public function resolveEndpoint(): string
@@ -28,7 +31,10 @@ class SendDocumentAsJsonRequest extends Request implements HasBody
 
     protected function defaultBody(): array
     {
-        return $this->payload;
+        return [
+            'channel' => $this->channel->value,
+            'document' => $this->document->toArray(),
+        ];
     }
 
     public function createDtoFromResponse(Response $response): DocumentData

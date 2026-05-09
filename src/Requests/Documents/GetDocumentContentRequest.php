@@ -17,7 +17,7 @@ class GetDocumentContentRequest extends Request
 
     public function resolveEndpoint(): string
     {
-        return "/documents/{$this->document}/content";
+        return "/documents/{$this->document}/xml";
     }
 
     protected function defaultHeaders(): array
