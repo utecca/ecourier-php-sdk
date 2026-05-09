@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Ecourier\Sdk\Data;
 
+use DateTimeImmutable;
+
 class ParticipantData
 {
     public function __construct(
@@ -13,8 +15,8 @@ class ParticipantData
         public readonly ?string $endpoint = null,
         public readonly ?string $country = null,
         public readonly ?array $documentTypes = null,
-        public readonly ?string $createdAt = null,
-        public readonly ?string $updatedAt = null,
+        public readonly ?DateTimeImmutable $createdAt = null,
+        public readonly ?DateTimeImmutable $updatedAt = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -26,8 +28,8 @@ class ParticipantData
             endpoint: $data['endpoint'] ?? null,
             country: $data['country'] ?? null,
             documentTypes: $data['document_types'] ?? null,
-            createdAt: $data['created_at'] ?? null,
-            updatedAt: $data['updated_at'] ?? null,
+            createdAt: isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
+            updatedAt: isset($data['updated_at']) ? new DateTimeImmutable($data['updated_at']) : null,
         );
     }
 }
