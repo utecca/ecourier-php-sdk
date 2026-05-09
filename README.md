@@ -16,7 +16,7 @@ Send and receive electronic invoices through the eCourier network from your PHP 
 composer require ecourier/sdk
 ```
 
-**Requirements:** PHP 8.2+
+**Requirements:** PHP 8.3+
 
 ---
 
