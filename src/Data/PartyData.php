@@ -26,4 +26,16 @@ class PartyData
             email: $data['email'] ?? null,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'cvr' => $this->cvr,
+            'vat' => $this->vat,
+            'country' => $this->country,
+            'email' => $this->email,
+        ];
+    }
 }

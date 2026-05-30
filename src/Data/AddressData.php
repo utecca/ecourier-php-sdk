@@ -22,4 +22,14 @@ class AddressData
             country: $data['country'] ?? null,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'street' => $this->street,
+            'city' => $this->city,
+            'zip' => $this->zip,
+            'country' => $this->country,
+        ];
+    }
 }

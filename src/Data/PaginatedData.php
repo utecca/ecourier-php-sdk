@@ -30,4 +30,21 @@ class PaginatedData
             prevPageUrl: $response['links']['prev'] ?? $meta['prev_page_url'] ?? null,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'data' => $this->data,
+            'meta' => [
+                'total' => $this->total,
+                'per_page' => $this->perPage,
+                'current_page' => $this->currentPage,
+                'last_page' => $this->lastPage,
+            ],
+            'links' => [
+                'next' => $this->nextPageUrl,
+                'prev' => $this->prevPageUrl,
+            ],
+        ];
+    }
 }

@@ -51,4 +51,25 @@ class DocumentData
             errors: $data['errors'] ?? null,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'status' => $this->status->value,
+            'direction' => $this->direction->value,
+            'type' => $this->type?->value,
+            'channel' => $this->channel?->value,
+            'reference' => $this->reference,
+            'issue_date' => $this->issueDate?->format('Y-m-d'),
+            'total_amount' => $this->totalAmount,
+            'currency' => $this->currency?->value,
+            'sender' => $this->sender?->toArray(),
+            'receiver' => $this->receiver?->toArray(),
+            'created_at' => $this->createdAt?->format('Y-m-d\TH:i:s\Z'),
+            'updated_at' => $this->updatedAt?->format('Y-m-d\TH:i:s\Z'),
+            'delivered_at' => $this->deliveredAt?->format('Y-m-d\TH:i:s\Z'),
+            'errors' => $this->errors,
+        ];
+    }
 }

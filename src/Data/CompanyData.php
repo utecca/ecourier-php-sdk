@@ -36,4 +36,20 @@ class CompanyData
             updatedAt: isset($data['updated_at']) ? new DateTimeImmutable($data['updated_at']) : null,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'cvr' => $this->cvr,
+            'vat' => $this->vat,
+            'country' => $this->country,
+            'email' => $this->email,
+            'phone' => $this->phone,
+            'address' => $this->address?->toArray(),
+            'created_at' => $this->createdAt?->format('Y-m-d\TH:i:s\Z'),
+            'updated_at' => $this->updatedAt?->format('Y-m-d\TH:i:s\Z'),
+        ];
+    }
 }

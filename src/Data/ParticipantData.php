@@ -33,4 +33,18 @@ class ParticipantData
             updatedAt: isset($data['updated_at']) ? new DateTimeImmutable($data['updated_at']) : null,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'scheme' => $this->scheme?->value,
+            'endpoint' => $this->endpoint,
+            'country' => $this->country,
+            'document_types' => $this->documentTypes,
+            'created_at' => $this->createdAt?->format('Y-m-d\TH:i:s\Z'),
+            'updated_at' => $this->updatedAt?->format('Y-m-d\TH:i:s\Z'),
+        ];
+    }
 }
