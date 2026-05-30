@@ -286,13 +286,14 @@ All filters are applied at the API level — only matching documents are returne
 
 ```php
 use Ecourier\Sdk\Enums\DocumentStatus;
+use Ecourier\Sdk\Enums\Sort;
 
 $ecourier->documents()
     ->list(
         status:     DocumentStatus::Delivered,
         createdAt:  '2024-06-01',
         identityId: 'DK:CVR:12345678',
-        sort:       '-created_at',
+        sort:       Sort::CreatedAtDesc,
         perPage:    50,
     )
     ->collect()
@@ -347,6 +348,7 @@ All typed fields use PHP backed enums, giving you IDE autocomplete and preventin
 | `DocumentType` | `Invoice`, `CreditNote`, `ApplicationResponse`, `Other` |
 | `Direction` | `Send`, `Receive` |
 | `Channel` | `Peppol`, `NemHandel` |
+| `Sort` | `CreatedAt`, `CreatedAtDesc` |
 | `Currency` | `EUR`, `DKK`, `USD`, `GBP`, and 29 others (ISO 4217) |
 | `IdentifierScheme` | `DK_CVR`, `GLN`, `EU_VAT`, and 80+ others |
 | `TaxCategoryCode` | `S`, `AA`, `Z`, `E`, `AE`, `K`, `G`, `O`, `L`, `M` |

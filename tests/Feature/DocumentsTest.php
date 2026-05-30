@@ -15,6 +15,7 @@ use Ecourier\Sdk\Enums\Direction;
 use Ecourier\Sdk\Enums\DocumentStatus;
 use Ecourier\Sdk\Enums\DocumentType;
 use Ecourier\Sdk\Enums\IdentifierScheme;
+use Ecourier\Sdk\Enums\Sort;
 use Ecourier\Sdk\Pagination\DocumentsPaginator;
 use Ecourier\Sdk\Requests\Documents\GetDocumentRequest;
 use Ecourier\Sdk\Requests\Documents\GetDocumentsRequest;
@@ -146,6 +147,20 @@ it('omits the filter key entirely when no filters are set', function () {
     $request = new GetDocumentsRequest();
 
     expect($request->query()->all())->not()->toHaveKey('filter');
+});
+
+it('serializes sort enum to its wire value', function () {
+    $asc  = new GetDocumentsRequest(sort: Sort::CreatedAt);
+    $desc = new GetDocumentsRequest(sort: Sort::CreatedAtDesc);
+
+    expect($asc->query()->all()['sort'])->toBe('created_at');
+    expect($desc->query()->all()['sort'])->toBe('-created_at');
+});
+
+it('omits sort when not provided', function () {
+    $request = new GetDocumentsRequest();
+
+    expect($request->query()->all())->not()->toHaveKey('sort');
 });
 
 // --- SendDocumentAsJsonRequest ---

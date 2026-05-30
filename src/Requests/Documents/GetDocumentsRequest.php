@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ecourier\Sdk\Requests\Documents;
 
 use Ecourier\Sdk\Enums\DocumentStatus;
+use Ecourier\Sdk\Enums\Sort;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\PaginationPlugin\Contracts\Paginatable;
@@ -17,7 +18,7 @@ class GetDocumentsRequest extends Request implements Paginatable
         private readonly ?DocumentStatus $status = null,
         private readonly ?string $createdAt = null,
         private readonly ?string $identityId = null,
-        private readonly ?string $sort = null,
+        private readonly ?Sort $sort = null,
         private readonly int $perPage = 10,
     ) {}
 
@@ -31,7 +32,7 @@ class GetDocumentsRequest extends Request implements Paginatable
         $query = ['per_page' => $this->perPage];
 
         if ($this->sort !== null) {
-            $query['sort'] = $this->sort;
+            $query['sort'] = $this->sort->value;
         }
 
         $filter = array_filter([

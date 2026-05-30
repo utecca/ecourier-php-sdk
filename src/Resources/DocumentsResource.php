@@ -9,6 +9,7 @@ use Ecourier\Sdk\Data\Invoice\InvoiceDocumentData;
 use Ecourier\Sdk\Enums\Channel;
 use Ecourier\Sdk\Enums\DocumentStatus;
 use Ecourier\Sdk\Enums\IdentifierScheme;
+use Ecourier\Sdk\Enums\Sort;
 use Ecourier\Sdk\Pagination\DocumentsPaginator;
 use Ecourier\Sdk\Requests\Documents\GetDocumentsRequest;
 use Ecourier\Sdk\Requests\Documents\GetDocumentRequest;
@@ -26,7 +27,7 @@ class DocumentsResource extends BaseResource
         ?DocumentStatus $status = null,
         ?string $createdAt = null,
         ?string $identityId = null,
-        ?string $sort = null,
+        ?Sort $sort = null,
         int $perPage = 10,
     ): DocumentsPaginator {
         $request = new GetDocumentsRequest(
