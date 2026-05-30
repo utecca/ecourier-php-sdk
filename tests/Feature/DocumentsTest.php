@@ -162,9 +162,10 @@ it('can send a document as json', function () {
     $connector = new EcourierConnector(apiKey: 'pk_test_fake');
     $connector->withMockClient($mockClient);
 
-    $response = $connector->documents()->sendJson(Channel::Peppol, minimalInvoice());
+    $document = $connector->documents()->sendJson(Channel::Peppol, minimalInvoice());
 
-    expect($response->status())->toBe(200);
+    expect($document)->toBeInstanceOf(DocumentData::class);
+    expect($document->id)->toBe('doc_01xyz');
     $mockClient->assertSent(SendDocumentAsJsonRequest::class);
 });
 
@@ -193,7 +194,7 @@ it('can send a document as xml', function () {
     $connector = new EcourierConnector(apiKey: 'pk_test_fake');
     $connector->withMockClient($mockClient);
 
-    $response = $connector->documents()->sendXml(
+    $document = $connector->documents()->sendXml(
         xml: '<Invoice>...</Invoice>',
         channel: Channel::Peppol,
         senderScheme: IdentifierScheme::DK_CVR,
@@ -202,7 +203,8 @@ it('can send a document as xml', function () {
         recipientId: '5790000123456',
     );
 
-    expect($response->status())->toBe(200);
+    expect($document)->toBeInstanceOf(DocumentData::class);
+    expect($document->id)->toBe('doc_01xyz');
     $mockClient->assertSent(SendDocumentAsXmlRequest::class);
 });
 

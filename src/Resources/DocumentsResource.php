@@ -50,9 +50,9 @@ class DocumentsResource extends BaseResource
         return $this->get($document)->dto();
     }
 
-    public function sendJson(Channel $channel, InvoiceDocumentData $document): Response
+    public function sendJson(Channel $channel, InvoiceDocumentData $document): DocumentData
     {
-        return $this->connector->send(new SendDocumentAsJsonRequest($channel, $document));
+        return $this->connector->send(new SendDocumentAsJsonRequest($channel, $document))->dto();
     }
 
     public function sendXml(
@@ -62,7 +62,7 @@ class DocumentsResource extends BaseResource
         string $senderId,
         IdentifierScheme $recipientScheme,
         string $recipientId,
-    ): Response {
+    ): DocumentData {
         return $this->connector->send(new SendDocumentAsXmlRequest(
             xml: $xml,
             channel: $channel,
@@ -70,7 +70,7 @@ class DocumentsResource extends BaseResource
             senderId: $senderId,
             recipientScheme: $recipientScheme,
             recipientId: $recipientId,
-        ));
+        ))->dto();
     }
 
     public function contentAsXml(string $document): Response
