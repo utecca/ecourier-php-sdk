@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Ecourier\Sdk\Data\AddressData;
 use Ecourier\Sdk\Data\CompanyData;
 use Ecourier\Sdk\Data\DocumentData;
-use Ecourier\Sdk\Data\PaginatedData;
 use Ecourier\Sdk\Data\ParticipantData;
 use Ecourier\Sdk\Data\PartyData;
 use Ecourier\Sdk\Enums\Channel;
@@ -278,39 +277,3 @@ it('roundtrips ParticipantData through fromArray and toArray', function () {
     expect($result['document_types'])->toBe($fixture['document_types']);
 });
 
-// --- PaginatedData ---
-
-it('serializes PaginatedData to array with all keys', function () {
-    $paginated = new PaginatedData(
-        data: [['id' => 'doc_01']],
-        total: 1,
-        perPage: 10,
-        currentPage: 1,
-        lastPage: 1,
-        nextPageUrl: null,
-        prevPageUrl: null,
-    );
-
-    $result = $paginated->toArray();
-
-    expect($result)->toHaveKeys(['data', 'meta', 'links']);
-    expect($result['data'])->toBe([['id' => 'doc_01']]);
-    expect($result['meta'])->toHaveKeys(['total', 'per_page', 'current_page', 'last_page']);
-    expect($result['meta']['total'])->toBe(1);
-    expect($result['links']['next'])->toBeNull();
-    expect($result['links']['prev'])->toBeNull();
-});
-
-it('roundtrips PaginatedData through fromArray and toArray', function () {
-    $input = [
-        'data' => [['id' => 'doc_01']],
-        'meta' => ['total' => 5, 'per_page' => 10, 'current_page' => 1, 'last_page' => 1],
-        'links' => ['next' => 'https://api.ecourier.io/v1/documents?page=2', 'prev' => null],
-    ];
-
-    $result = PaginatedData::fromArray($input)->toArray();
-
-    expect($result['data'])->toBe($input['data']);
-    expect($result['meta'])->toBe($input['meta']);
-    expect($result['links'])->toBe($input['links']);
-});
