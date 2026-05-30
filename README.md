@@ -113,10 +113,13 @@ $invoice = new InvoiceDocumentData(
     ),
 );
 
-$response = $ecourier->documents()->sendJson(Channel::Peppol, $invoice);
+$document = $ecourier->documents()->sendJson(Channel::Peppol, $invoice);
+
+echo $document->id;     // doc_01xyz
+echo $document->status; // DocumentStatus::Pending
 ```
 
-> **Note:** Validation is asynchronous. A `200` response means the document was accepted, not yet delivered. Use webhooks or poll `find()` to track delivery.
+> **Note:** Validation is asynchronous. `Pending` means the document was accepted, not yet delivered. Use webhooks or poll `find()` to track delivery.
 
 ### Send a document as raw XML
 
@@ -133,7 +136,7 @@ $xml = <<<XML
 </Invoice>
 XML;
 
-$response = $ecourier->documents()->sendXml(
+$document = $ecourier->documents()->sendXml(
     xml: $xml,
     channel: Channel::Peppol,
     senderScheme: IdentifierScheme::DK_CVR,
@@ -166,40 +169,9 @@ $document->sender->name;    // 'Acme Corporation'
 $document->receiver->name;  // 'Beta Ltd'
 ```
 
-### List documents (paginated)
+### List documents
 
-`list()` returns a lazy paginator — pages are fetched on demand as you iterate.
-
-```php
-foreach ($ecourier->documents()->list()->items() as $document) {
-    echo $document->id . ': ' . $document->status->value . PHP_EOL;
-}
-```
-
-Filter by status, identity, or date:
-
-```php
-use Ecourier\Sdk\Enums\DocumentStatus;
-
-$paginator = $ecourier->documents()->list(
-    status:     DocumentStatus::Delivered,
-    createdAt:  '2024-06-01',
-    identityId: 'DK:CVR:12345678',
-    perPage:    50,
-);
-
-foreach ($paginator->items() as $document) {
-    // ...
-}
-```
-
-Collect all results into an array:
-
-```php
-$documents = iterator_to_array(
-    $ecourier->documents()->list(status: DocumentStatus::Pending)->items()
-);
-```
+`list()` returns a lazy paginator — see [Pagination](#pagination) for the full API.
 
 ### Retrieve document content
 
@@ -247,6 +219,84 @@ foreach ($participant->documentTypes as $type) {
     // urn:oasis:names:specification:ubl:schema:xsd:Invoice-2
     // urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2
 }
+```
+
+---
+
+## Pagination
+
+`list()` returns a `DocumentsPaginator` — a lazy iterator built on Saloon's `PagedPaginator`. Pages are fetched from the API on demand, one at a time, as you consume items.
+
+### Iterating all pages
+
+The simplest approach. Each page is fetched automatically when the previous one is exhausted:
+
+```php
+foreach ($ecourier->documents()->list()->items() as $document) {
+    echo $document->id;
+}
+```
+
+### LazyCollection
+
+If you're in a Laravel application, `collect()` wraps the paginator in a `LazyCollection`, giving you the full collection API without loading everything into memory:
+
+```php
+$ecourier->documents()->list(perPage: 50)
+    ->collect()
+    ->each(function (DocumentData $document) {
+        // processed one at a time, page by page
+    });
+
+// Chain collection methods — pages are fetched as items are consumed
+$ecourier->documents()->list()
+    ->collect()
+    ->filter(fn ($doc) => $doc->totalAmount > 1000)
+    ->each(fn ($doc) => ProcessDocument::dispatch($doc));
+```
+
+### First page only
+
+Use `setMaxPages(1)` to stop after a single page. Exactly one HTTP request is made:
+
+```php
+$documents = $ecourier->documents()
+    ->list(perPage: 25)
+    ->setMaxPages(1)
+    ->collect()
+    ->all();
+```
+
+### A specific page
+
+Combine `setStartPage()` and `setMaxPages()` to jump to any page:
+
+```php
+$documents = $ecourier->documents()
+    ->list(perPage: 25)
+    ->setStartPage(3)
+    ->setMaxPages(1)
+    ->collect()
+    ->all();
+```
+
+### Filtering
+
+All filters are applied at the API level — only matching documents are returned:
+
+```php
+use Ecourier\Sdk\Enums\DocumentStatus;
+
+$ecourier->documents()
+    ->list(
+        status:     DocumentStatus::Delivered,
+        createdAt:  '2024-06-01',
+        identityId: 'DK:CVR:12345678',
+        sort:       '-created_at',
+        perPage:    50,
+    )
+    ->collect()
+    ->each(fn ($doc) => ...);
 ```
 
 ---
