@@ -1,0 +1,36 @@
+{
+    "event_id": "evt_01hxyz",
+    "event": "Document.Send.Created",
+    "occurred_at": "2024-06-01T10:06:00Z",
+    "version": 1,
+    "team_id": "team_01abc",
+    "mode": "test",
+    "company_id": "comp_01abc",
+    "payload": {
+        "document": {
+            "id": "doc_01xyz",
+            "dashboard_url": "https://app.ecourier.test/documents/doc_01xyz",
+            "created_at": "2024-06-01T10:00:00Z",
+            "transmitted_at": "2024-06-01T10:05:00Z",
+            "channel": "NemHandel",
+            "status": "Delivered",
+            "type": "Invoice",
+            "latest_e2e_message_uuid": "msg_01abc",
+            "latest_e2e_transmission_id": "trans_01def",
+            "sender": {
+                "name": "Acme Corporation",
+                "identifier_scheme": "DK:CVR",
+                "identifier_value": "12345678"
+            },
+            "receiver": {
+                "name": "Beta Ltd",
+                "identifier_scheme": "DK:CVR",
+                "identifier_value": "87654321"
+            },
+            "ubl": {
+                "id": "INV-2024-001",
+                "issue_date": "2024-06-01"
+            }
+        }
+    }
+}

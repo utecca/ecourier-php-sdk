@@ -23,4 +23,5 @@ class DocumentsPaginator extends PagedPaginator
             $response->json('data') ?? [],
         );
     }
+
 }
