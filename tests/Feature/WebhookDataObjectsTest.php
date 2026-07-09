@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use Ecourier\Sdk\Data\Webhook\DocumentWebhook;
-use Ecourier\Sdk\Data\Webhook\WebhookEvent;
-use Ecourier\Sdk\Enums\Channel;
-use Ecourier\Sdk\Enums\DocumentStatus;
-use Ecourier\Sdk\Enums\DocumentType;
+use Ecourier\Data\Webhook\DocumentWebhook;
+use Ecourier\Data\Webhook\WebhookEvent;
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\DocumentStatus;
+use Ecourier\Enums\DocumentType;
 
 function webhookBody(string $event = 'Document.Send.Created'): string
 {

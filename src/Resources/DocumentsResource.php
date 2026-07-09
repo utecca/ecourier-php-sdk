@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Resources;
+namespace Ecourier\Resources;
 
-use Ecourier\Sdk\Data\DocumentData;
-use Ecourier\Sdk\Data\Invoice\InvoiceDocumentData;
-use Ecourier\Sdk\Enums\Channel;
-use Ecourier\Sdk\Enums\DocumentStatus;
-use Ecourier\Sdk\Enums\IdentifierScheme;
-use Ecourier\Sdk\Enums\Sort;
-use Ecourier\Sdk\Pagination\DocumentsPaginator;
-use Ecourier\Sdk\Requests\Documents\GetDocumentsRequest;
-use Ecourier\Sdk\Requests\Documents\GetDocumentRequest;
-use Ecourier\Sdk\Requests\Documents\GetDocumentContentRequest;
-use Ecourier\Sdk\Requests\Documents\GetDocumentHtmlRequest;
-use Ecourier\Sdk\Requests\Documents\GetDocumentPdfRequest;
-use Ecourier\Sdk\Requests\Documents\SendDocumentAsJsonRequest;
-use Ecourier\Sdk\Requests\Documents\SendDocumentAsXmlRequest;
+use Ecourier\Data\DocumentData;
+use Ecourier\Data\Invoice\InvoiceDocumentData;
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\DocumentStatus;
+use Ecourier\Enums\IdentifierScheme;
+use Ecourier\Enums\Sort;
+use Ecourier\Pagination\DocumentsPaginator;
+use Ecourier\Requests\Documents\GetDocumentsRequest;
+use Ecourier\Requests\Documents\GetDocumentRequest;
+use Ecourier\Requests\Documents\GetDocumentContentRequest;
+use Ecourier\Requests\Documents\GetDocumentHtmlRequest;
+use Ecourier\Requests\Documents\GetDocumentPdfRequest;
+use Ecourier\Requests\Documents\SendDocumentAsJsonRequest;
+use Ecourier\Requests\Documents\SendDocumentAsXmlRequest;
 use Saloon\Http\BaseResource;
 use Saloon\Http\Response;
 

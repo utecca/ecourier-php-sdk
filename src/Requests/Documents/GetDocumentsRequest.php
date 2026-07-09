@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Requests\Documents;
+namespace Ecourier\Requests\Documents;
 
-use Ecourier\Sdk\Enums\DocumentStatus;
-use Ecourier\Sdk\Enums\Sort;
+use Ecourier\Enums\DocumentStatus;
+use Ecourier\Enums\Sort;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\PaginationPlugin\Contracts\Paginatable;

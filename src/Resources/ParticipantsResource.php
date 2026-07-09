@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Resources;
+namespace Ecourier\Resources;
 
-use Ecourier\Sdk\Data\ParticipantData;
-use Ecourier\Sdk\Enums\Channel;
-use Ecourier\Sdk\Enums\IdentifierScheme;
-use Ecourier\Sdk\Requests\Participants\GetParticipantRequest;
+use Ecourier\Data\ParticipantData;
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\IdentifierScheme;
+use Ecourier\Requests\Participants\GetParticipantRequest;
 use Saloon\Http\BaseResource;
 use Saloon\Http\Response;
 

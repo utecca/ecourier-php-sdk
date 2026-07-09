@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Data;
+namespace Ecourier\Data;
 
 use DateTimeImmutable;
-use Ecourier\Sdk\Enums\Channel;
-use Ecourier\Sdk\Enums\Currency;
-use Ecourier\Sdk\Enums\Direction;
-use Ecourier\Sdk\Enums\DocumentStatus;
-use Ecourier\Sdk\Enums\DocumentType;
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\Currency;
+use Ecourier\Enums\Direction;
+use Ecourier\Enums\DocumentStatus;
+use Ecourier\Enums\DocumentType;
 
 class DocumentData
 {

@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-use Ecourier\Sdk\Data\DocumentData;
-use Ecourier\Sdk\Data\Invoice\InvoiceDocumentData;
-use Ecourier\Sdk\Data\Invoice\InvoiceLineData;
-use Ecourier\Sdk\Data\Invoice\InvoicePartyData;
-use Ecourier\Sdk\Data\Invoice\InvoiceTotalsData;
-use Ecourier\Sdk\Data\Invoice\ParticipantIdentifier;
-use Ecourier\Sdk\EcourierConnector;
-use Ecourier\Sdk\Enums\Channel;
-use Ecourier\Sdk\Enums\Currency;
-use Ecourier\Sdk\Enums\Direction;
-use Ecourier\Sdk\Enums\DocumentStatus;
-use Ecourier\Sdk\Enums\DocumentType;
-use Ecourier\Sdk\Enums\IdentifierScheme;
-use Ecourier\Sdk\Enums\Sort;
-use Ecourier\Sdk\Pagination\DocumentsPaginator;
-use Ecourier\Sdk\Requests\Documents\GetDocumentRequest;
-use Ecourier\Sdk\Requests\Documents\GetDocumentsRequest;
-use Ecourier\Sdk\Requests\Documents\SendDocumentAsJsonRequest;
-use Ecourier\Sdk\Requests\Documents\SendDocumentAsXmlRequest;
+use Ecourier\Data\DocumentData;
+use Ecourier\Data\Invoice\InvoiceDocumentData;
+use Ecourier\Data\Invoice\InvoiceLineData;
+use Ecourier\Data\Invoice\InvoicePartyData;
+use Ecourier\Data\Invoice\InvoiceTotalsData;
+use Ecourier\Data\Invoice\ParticipantIdentifier;
+use Ecourier\EcourierConnector;
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\Currency;
+use Ecourier\Enums\Direction;
+use Ecourier\Enums\DocumentStatus;
+use Ecourier\Enums\DocumentType;
+use Ecourier\Enums\IdentifierScheme;
+use Ecourier\Enums\Sort;
+use Ecourier\Pagination\DocumentsPaginator;
+use Ecourier\Requests\Documents\GetDocumentRequest;
+use Ecourier\Requests\Documents\GetDocumentsRequest;
+use Ecourier\Requests\Documents\SendDocumentAsJsonRequest;
+use Ecourier\Requests\Documents\SendDocumentAsXmlRequest;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Data\Webhook;
+namespace Ecourier\Data\Webhook;
 
 class ParticipantData
 {

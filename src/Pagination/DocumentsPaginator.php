@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Pagination;
+namespace Ecourier\Pagination;
 
-use Ecourier\Sdk\Data\DocumentData;
+use Ecourier\Data\DocumentData;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 use Saloon\PaginationPlugin\PagedPaginator;

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Resources;
+namespace Ecourier\Resources;
 
-use Ecourier\Sdk\Data\CompanyData;
-use Ecourier\Sdk\Requests\Companies\GetCompanyRequest;
+use Ecourier\Data\CompanyData;
+use Ecourier\Requests\Companies\GetCompanyRequest;
 use Saloon\Http\BaseResource;
 use Saloon\Http\Response;
 

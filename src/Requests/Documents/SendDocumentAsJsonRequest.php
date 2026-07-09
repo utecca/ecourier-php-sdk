@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Requests\Documents;
+namespace Ecourier\Requests\Documents;
 
-use Ecourier\Sdk\Data\DocumentData;
-use Ecourier\Sdk\Data\Invoice\InvoiceDocumentData;
-use Ecourier\Sdk\Enums\Channel;
+use Ecourier\Data\DocumentData;
+use Ecourier\Data\Invoice\InvoiceDocumentData;
+use Ecourier\Enums\Channel;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;

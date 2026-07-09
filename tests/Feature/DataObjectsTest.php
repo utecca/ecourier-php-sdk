@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-use Ecourier\Sdk\Data\AddressData;
-use Ecourier\Sdk\Data\CompanyData;
-use Ecourier\Sdk\Data\DocumentData;
-use Ecourier\Sdk\Data\ParticipantData;
-use Ecourier\Sdk\Data\PartyData;
-use Ecourier\Sdk\Enums\Channel;
-use Ecourier\Sdk\Enums\Currency;
-use Ecourier\Sdk\Enums\Direction;
-use Ecourier\Sdk\Enums\DocumentStatus;
-use Ecourier\Sdk\Enums\DocumentType;
-use Ecourier\Sdk\Enums\IdentifierScheme;
+use Ecourier\Data\AddressData;
+use Ecourier\Data\CompanyData;
+use Ecourier\Data\DocumentData;
+use Ecourier\Data\ParticipantData;
+use Ecourier\Data\PartyData;
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\Currency;
+use Ecourier\Enums\Direction;
+use Ecourier\Enums\DocumentStatus;
+use Ecourier\Enums\DocumentType;
+use Ecourier\Enums\IdentifierScheme;
 
 // --- AddressData ---
 

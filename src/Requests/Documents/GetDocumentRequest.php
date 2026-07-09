@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Requests\Documents;
+namespace Ecourier\Requests\Documents;
 
-use Ecourier\Sdk\Data\DocumentData;
+use Ecourier\Data\DocumentData;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;

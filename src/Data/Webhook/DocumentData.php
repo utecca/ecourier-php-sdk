@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Data\Webhook;
+namespace Ecourier\Data\Webhook;
 
 use DateTimeImmutable;
-use Ecourier\Sdk\Enums\Channel;
-use Ecourier\Sdk\Enums\DocumentStatus;
-use Ecourier\Sdk\Enums\DocumentType;
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\DocumentStatus;
+use Ecourier\Enums\DocumentType;
 
 class DocumentData
 {

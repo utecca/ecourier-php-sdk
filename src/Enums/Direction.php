@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Enums;
+namespace Ecourier\Enums;
 
 enum Direction: string
 {

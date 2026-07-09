@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk;
+namespace Ecourier;
 
-use Ecourier\Sdk\Exceptions\AuthenticationException;
-use Ecourier\Sdk\Exceptions\EcourierException;
-use Ecourier\Sdk\Exceptions\NotFoundException;
-use Ecourier\Sdk\Exceptions\ValidationException;
-use Ecourier\Sdk\Resources\CompaniesResource;
-use Ecourier\Sdk\Resources\DocumentsResource;
-use Ecourier\Sdk\Resources\ParticipantsResource;
+use Ecourier\Exceptions\AuthenticationException;
+use Ecourier\Exceptions\EcourierException;
+use Ecourier\Exceptions\NotFoundException;
+use Ecourier\Exceptions\ValidationException;
+use Ecourier\Resources\CompaniesResource;
+use Ecourier\Resources\DocumentsResource;
+use Ecourier\Resources\ParticipantsResource;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector;
 use Saloon\Http\Response;

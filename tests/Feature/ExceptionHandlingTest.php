@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-use Ecourier\Sdk\Data\Invoice\InvoiceDocumentData;
-use Ecourier\Sdk\Data\Invoice\InvoiceLineData;
-use Ecourier\Sdk\Data\Invoice\InvoicePartyData;
-use Ecourier\Sdk\Data\Invoice\InvoiceTotalsData;
-use Ecourier\Sdk\Data\Invoice\ParticipantIdentifier;
-use Ecourier\Sdk\EcourierConnector;
-use Ecourier\Sdk\Enums\Channel;
-use Ecourier\Sdk\Enums\Currency;
-use Ecourier\Sdk\Enums\DocumentType;
-use Ecourier\Sdk\Enums\IdentifierScheme;
-use Ecourier\Sdk\Exceptions\AuthenticationException;
-use Ecourier\Sdk\Exceptions\NotFoundException;
-use Ecourier\Sdk\Exceptions\ValidationException;
-use Ecourier\Sdk\Requests\Companies\GetCompanyRequest;
-use Ecourier\Sdk\Requests\Documents\SendDocumentAsJsonRequest;
+use Ecourier\Data\Invoice\InvoiceDocumentData;
+use Ecourier\Data\Invoice\InvoiceLineData;
+use Ecourier\Data\Invoice\InvoicePartyData;
+use Ecourier\Data\Invoice\InvoiceTotalsData;
+use Ecourier\Data\Invoice\ParticipantIdentifier;
+use Ecourier\EcourierConnector;
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\Currency;
+use Ecourier\Enums\DocumentType;
+use Ecourier\Enums\IdentifierScheme;
+use Ecourier\Exceptions\AuthenticationException;
+use Ecourier\Exceptions\NotFoundException;
+use Ecourier\Exceptions\ValidationException;
+use Ecourier\Requests\Companies\GetCompanyRequest;
+use Ecourier\Requests\Documents\SendDocumentAsJsonRequest;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 

@@ -13,7 +13,7 @@ Send and receive electronic invoices through the eCourier network from your PHP 
 ## Installation
 
 ```bash
-composer require ecourier/sdk
+composer require ecourier/ecourier
 ```
 
 **Requirements:** PHP 8.3+
@@ -25,7 +25,7 @@ composer require ecourier/sdk
 Instantiate the connector with your API key. The key prefix determines the mode: `pk_test_` for test, `pk_live_` for production.
 
 ```php
-use Ecourier\Sdk\EcourierConnector;
+use Ecourier\EcourierConnector;
 
 // Test mode
 $ecourier = new EcourierConnector(apiKey: 'pk_test_your_key_here');
@@ -82,15 +82,15 @@ Documents are the core of eCourier — they represent invoices and credit notes 
 Build a typed `InvoiceDocumentData` payload and submit it to a specific channel. eCourier converts it to the correct XML schema automatically.
 
 ```php
-use Ecourier\Sdk\Data\Invoice\InvoiceDocumentData;
-use Ecourier\Sdk\Data\Invoice\InvoiceLineData;
-use Ecourier\Sdk\Data\Invoice\InvoicePartyData;
-use Ecourier\Sdk\Data\Invoice\InvoiceTotalsData;
-use Ecourier\Sdk\Data\Invoice\ParticipantIdentifier;
-use Ecourier\Sdk\Enums\Channel;
-use Ecourier\Sdk\Enums\Currency;
-use Ecourier\Sdk\Enums\DocumentType;
-use Ecourier\Sdk\Enums\IdentifierScheme;
+use Ecourier\Data\Invoice\InvoiceDocumentData;
+use Ecourier\Data\Invoice\InvoiceLineData;
+use Ecourier\Data\Invoice\InvoicePartyData;
+use Ecourier\Data\Invoice\InvoiceTotalsData;
+use Ecourier\Data\Invoice\ParticipantIdentifier;
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\Currency;
+use Ecourier\Enums\DocumentType;
+use Ecourier\Enums\IdentifierScheme;
 
 $invoice = new InvoiceDocumentData(
     type: DocumentType::Invoice,
@@ -126,8 +126,8 @@ echo $document->status; // DocumentStatus::Pending
 If you need full control over the XML schema, send the raw UBL document directly. All routing headers are required.
 
 ```php
-use Ecourier\Sdk\Enums\Channel;
-use Ecourier\Sdk\Enums\IdentifierScheme;
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\IdentifierScheme;
 
 $xml = <<<XML
 <?xml version="1.0" encoding="UTF-8"?>
@@ -149,11 +149,11 @@ $document = $ecourier->documents()->sendXml(
 ### Get a single document
 
 ```php
-use Ecourier\Sdk\Enums\Channel;
-use Ecourier\Sdk\Enums\Currency;
-use Ecourier\Sdk\Enums\Direction;
-use Ecourier\Sdk\Enums\DocumentStatus;
-use Ecourier\Sdk\Enums\DocumentType;
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\Currency;
+use Ecourier\Enums\Direction;
+use Ecourier\Enums\DocumentStatus;
+use Ecourier\Enums\DocumentType;
 
 $document = $ecourier->documents()->find('doc_01xyz');
 
@@ -201,8 +201,8 @@ file_put_contents('invoice.pdf', $pdf);
 Look up whether a company is reachable on the eCourier network and which document types they accept.
 
 ```php
-use Ecourier\Sdk\Enums\Channel;
-use Ecourier\Sdk\Enums\IdentifierScheme;
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\IdentifierScheme;
 
 $participant = $ecourier->participants()->find(
     channel: Channel::Peppol,
@@ -285,8 +285,8 @@ $documents = $ecourier->documents()
 All filters are applied at the API level — only matching documents are returned:
 
 ```php
-use Ecourier\Sdk\Enums\DocumentStatus;
-use Ecourier\Sdk\Enums\Sort;
+use Ecourier\Enums\DocumentStatus;
+use Ecourier\Enums\Sort;
 
 $ecourier->documents()
     ->list(
@@ -316,10 +316,10 @@ The SDK throws typed exceptions for every error case — no checking status code
 All exceptions extend `EcourierException`, so you can catch broadly or narrowly:
 
 ```php
-use Ecourier\Sdk\Exceptions\AuthenticationException;
-use Ecourier\Sdk\Exceptions\EcourierException;
-use Ecourier\Sdk\Exceptions\NotFoundException;
-use Ecourier\Sdk\Exceptions\ValidationException;
+use Ecourier\Exceptions\AuthenticationException;
+use Ecourier\Exceptions\EcourierException;
+use Ecourier\Exceptions\NotFoundException;
+use Ecourier\Exceptions\ValidationException;
 
 try {
     $document = $ecourier->documents()->find('doc_missing');
@@ -366,10 +366,10 @@ The SDK is built on Saloon, which ships with a first-class mock client. No HTTP 
 ### Mocking a response
 
 ```php
-use Ecourier\Sdk\EcourierConnector;
-use Ecourier\Sdk\Enums\Direction;
-use Ecourier\Sdk\Enums\DocumentStatus;
-use Ecourier\Sdk\Requests\Documents\GetDocumentRequest;
+use Ecourier\EcourierConnector;
+use Ecourier\Enums\Direction;
+use Ecourier\Enums\DocumentStatus;
+use Ecourier\Requests\Documents\GetDocumentRequest;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
@@ -400,7 +400,7 @@ $mockClient->assertSentCount(1);
 ### Mocking exceptions
 
 ```php
-use Ecourier\Sdk\Requests\Companies\GetCompanyRequest;
+use Ecourier\Requests\Companies\GetCompanyRequest;
 
 $mockClient = new MockClient([
     GetCompanyRequest::class => MockResponse::make(
@@ -508,7 +508,7 @@ $response->json();      // decoded array
 If you need to bypass the resource layer entirely:
 
 ```php
-use Ecourier\Sdk\Requests\Documents\GetDocumentRequest;
+use Ecourier\Requests\Documents\GetDocumentRequest;
 
 $response = $ecourier->send(new GetDocumentRequest('doc_01xyz'));
 ```

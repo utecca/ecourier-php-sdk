@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Data\Invoice;
+namespace Ecourier\Data\Invoice;
 
 class InvoiceContactData
 {

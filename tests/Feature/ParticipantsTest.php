@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use Ecourier\Sdk\Data\ParticipantData;
-use Ecourier\Sdk\EcourierConnector;
-use Ecourier\Sdk\Enums\Channel;
-use Ecourier\Sdk\Enums\IdentifierScheme;
-use Ecourier\Sdk\Requests\Participants\GetParticipantRequest;
+use Ecourier\Data\ParticipantData;
+use Ecourier\EcourierConnector;
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\IdentifierScheme;
+use Ecourier\Requests\Participants\GetParticipantRequest;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 

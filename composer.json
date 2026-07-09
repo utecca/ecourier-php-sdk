@@ -1,5 +1,5 @@
 {
-    "name": "ecourier/sdk",
+    "name": "ecourier/ecourier",
     "description": "PHP SDK for the eCourier API",
     "type": "library",
     "license": "MIT",
@@ -15,12 +15,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Ecourier\\Sdk\\": "src/"
+            "Ecourier\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Ecourier\\Sdk\\Tests\\": "tests/"
+            "Ecourier\\Tests\\": "tests/"
         }
     },
     "scripts": {

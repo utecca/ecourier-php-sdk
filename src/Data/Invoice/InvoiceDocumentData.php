@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Data\Invoice;
+namespace Ecourier\Data\Invoice;
 
-use Ecourier\Sdk\Enums\Currency;
-use Ecourier\Sdk\Enums\DocumentType;
+use Ecourier\Enums\Currency;
+use Ecourier\Enums\DocumentType;
 
 class InvoiceDocumentData
 {

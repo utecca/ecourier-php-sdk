@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Ecourier\Sdk\Data\CompanyData;
-use Ecourier\Sdk\EcourierConnector;
-use Ecourier\Sdk\Requests\Companies\GetCompanyRequest;
+use Ecourier\Data\CompanyData;
+use Ecourier\EcourierConnector;
+use Ecourier\Requests\Companies\GetCompanyRequest;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 

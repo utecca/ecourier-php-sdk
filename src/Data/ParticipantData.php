@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Data;
+namespace Ecourier\Data;
 
 use DateTimeImmutable;
-use Ecourier\Sdk\Enums\IdentifierScheme;
+use Ecourier\Enums\IdentifierScheme;
 
 class ParticipantData
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Requests\Documents;
+namespace Ecourier\Requests\Documents;
 
 use Saloon\Enums\Method;
 use Saloon\Http\Request;

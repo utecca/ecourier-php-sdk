@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Sdk\Exceptions;
+namespace Ecourier\Exceptions;
 
 use Saloon\Http\Response;
 
