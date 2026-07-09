@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Ecourier\Data\CompanyData;
 use Ecourier\EcourierConnector;
+use Ecourier\Enums\Mode;
 use Ecourier\Requests\Companies\GetCompanyRequest;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -23,12 +24,15 @@ it('can get a company', function () {
     $company = $connector->companies()->find('comp_01abc');
 
     expect($company)->toBeInstanceOf(CompanyData::class);
-    expect($company->id)->toBe('comp_01abc');
-    expect($company->name)->toBe('Acme Corporation');
-    expect($company->cvr)->toBe('12345678');
+    expect($company->id)->toBe('0101knwp96k3ggvkra831yrd74zh');
+    expect($company->name)->toBe('Acme Danmark A/S');
+    expect($company->mode)->toBe(Mode::Live);
+    expect($company->companyNo)->toBe('12345678');
     expect($company->country)->toBe('DK');
-    expect($company->address)->not()->toBeNull();
-    expect($company->address->city)->toBe('Copenhagen');
+    expect($company->authorisation?->signed)->toBeFalse();
+    expect($company->authorisation?->signer->firstName)->toBe('Pernille');
+    expect($company->participants)->toHaveCount(1);
+    expect($company->participants[0]->identifier)->toBe('5790000435944');
 });
 
 it('sends the correct request to get a company', function () {

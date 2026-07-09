@@ -57,9 +57,9 @@ The SDK is organized into three resources, accessible as methods on the connecto
 ```php
 $company = $ecourier->companies()->find('comp_01abc');
 
-echo $company->name;           // Acme Corporation
-echo $company->cvr;            // 12345678
-echo $company->address->city;  // Copenhagen
+echo $company->name;      // Acme Danmark A/S
+echo $company->companyNo; // 12345678
+echo $company->mode;      // Mode::Live
 ```
 
 `find()` returns a typed `CompanyData` DTO. If you need the raw `Response` object instead, use `get()`:
@@ -115,11 +115,11 @@ $invoice = new InvoiceDocumentData(
 
 $document = $ecourier->documents()->sendJson(Channel::Peppol, $invoice);
 
-echo $document->id;     // doc_01xyz
-echo $document->status; // DocumentStatus::Pending
+echo $document->id;             // 01kmkdaf55vrrecfy70180tpr6
+echo $document->e2eMessageUuid; // ddc3b3ef-cbd4-4630-9d65-896b3e1abc61
 ```
 
-> **Note:** Validation is asynchronous. `Pending` means the document was accepted, not yet delivered. Use webhooks or poll `find()` to track delivery.
+> **Note:** `sendJson()` returns the accepted document ID and network message UUID. Use webhooks or poll `find()` to track delivery.
 
 ### Send a document as raw XML
 
@@ -150,23 +150,24 @@ $document = $ecourier->documents()->sendXml(
 
 ```php
 use Ecourier\Enums\Channel;
-use Ecourier\Enums\Currency;
 use Ecourier\Enums\Direction;
 use Ecourier\Enums\DocumentStatus;
 use Ecourier\Enums\DocumentType;
+use Ecourier\Enums\Mode;
+use Ecourier\Enums\SubmissionFormat;
 
 $document = $ecourier->documents()->find('doc_01xyz');
 
-$document->id;              // 'doc_01xyz'
-$document->status;          // DocumentStatus::Delivered
-$document->direction;       // Direction::Send
-$document->type;            // DocumentType::Invoice
-$document->channel;         // Channel::NemHandel
-$document->reference;       // 'INV-2024-001'
-$document->totalAmount;     // 1250.0
-$document->currency;        // Currency::DKK
-$document->sender->name;    // 'Acme Corporation'
-$document->receiver->name;  // 'Beta Ltd'
+$document->id;               // '01kmkdaf55vrrecfy70180tpr6'
+$document->status;           // DocumentStatus::Delivered
+$document->channel;          // Channel::NemHandel
+$document->mode;             // Mode::Live
+$document->direction;        // Direction::Send
+$document->type;             // DocumentType::Invoice
+$document->submissionFormat; // SubmissionFormat::JSON
+$document->sender->scheme;   // IdentifierScheme::DK_CVR
+$document->recipient->id;    // '5790000123456'
+$document->company->name;    // 'Acme Danmark A/S'
 ```
 
 ### List documents
@@ -198,7 +199,7 @@ file_put_contents('invoice.pdf', $pdf);
 
 ## Participants
 
-Look up whether a company is reachable on the eCourier network and which document types they accept.
+Look up whether a company is reachable on an eCourier network.
 
 ```php
 use Ecourier\Enums\Channel;
@@ -210,15 +211,9 @@ $participant = $ecourier->participants()->find(
     participantId: '5790000123456',
 );
 
-echo $participant->name;      // Beta Ltd
-echo $participant->scheme->value; // GLN
-echo $participant->endpoint;  // 5790000123456
-
-foreach ($participant->documentTypes as $type) {
-    echo $type . PHP_EOL;
-    // urn:oasis:names:specification:ubl:schema:xsd:Invoice-2
-    // urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2
-}
+echo $participant->entityName; // GLN Denmark
+echo $participant->mode->value; // Live
+echo $participant->orgNo;      // 9999796418186
 ```
 
 ---
@@ -251,7 +246,7 @@ $ecourier->documents()->list(perPage: 50)
 // Chain collection methods — pages are fetched as items are consumed
 $ecourier->documents()->list()
     ->collect()
-    ->filter(fn ($doc) => $doc->totalAmount > 1000)
+    ->filter(fn ($doc) => $doc->company?->name === 'Acme Danmark A/S')
     ->each(fn ($doc) => ProcessDocument::dispatch($doc));
 ```
 
@@ -286,13 +281,16 @@ All filters are applied at the API level — only matching documents are returne
 
 ```php
 use Ecourier\Enums\DocumentStatus;
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\Direction;
 use Ecourier\Enums\Sort;
 
 $ecourier->documents()
     ->list(
         status:     DocumentStatus::Delivered,
-        createdAt:  '2024-06-01',
-        identityId: 'DK:CVR:12345678',
+        channel:    Channel::Peppol,
+        companyId:  '0101knwp96k3ggvkra831yrd74zh',
+        direction:  Direction::Send,
         sort:       Sort::CreatedAtDesc,
         perPage:    50,
     )
@@ -345,9 +343,11 @@ All typed fields use PHP backed enums, giving you IDE autocomplete and preventin
 | Enum | Values |
 |---|---|
 | `DocumentStatus` | `Pending`, `Ready`, `Delivered`, `Failed` |
-| `DocumentType` | `Invoice`, `CreditNote`, `ApplicationResponse`, `Other` |
+| `DocumentType` | `Invoice`, `CreditNote`, `ApplicationResponse`, `EndUserStatisticsReport`, `TransactionStatisticsReport`, `Other` |
 | `Direction` | `Send`, `Receive` |
 | `Channel` | `Peppol`, `NemHandel` |
+| `Mode` | `Live`, `Test` |
+| `SubmissionFormat` | `XML`, `GOBL`, `JSON` |
 | `Sort` | `CreatedAt`, `CreatedAtDesc` |
 | `Currency` | `EUR`, `DKK`, `USD`, `GBP`, and 29 others (ISO 4217) |
 | `IdentifierScheme` | `DK_CVR`, `GLN`, `EU_VAT`, and 80+ others |
@@ -427,14 +427,15 @@ All resources return typed DTOs with readonly properties.
 |---|---|
 | `$id` | `string` |
 | `$name` | `string` |
-| `$cvr` | `?string` |
-| `$vat` | `?string` |
-| `$country` | `?string` |
-| `$email` | `?string` |
-| `$phone` | `?string` |
-| `$address` | `?AddressData` |
-| `$createdAt` | `?DateTimeImmutable` |
-| `$updatedAt` | `?DateTimeImmutable` |
+| `$mode` | `Mode` |
+| `$companyNo` | `string` |
+| `$createdAt` | `DateTimeImmutable` |
+| `$updatedAt` | `DateTimeImmutable` |
+| `$parentId` | `?string` |
+| `$children` | `array` |
+| `$country` | `string` |
+| `$authorisation` | `?CompanyAuthorisationData` |
+| `$participants` | `CompanyParticipantData[]` |
 
 ### `DocumentData`
 
@@ -442,32 +443,35 @@ All resources return typed DTOs with readonly properties.
 |---|---|
 | `$id` | `string` |
 | `$status` | `DocumentStatus` |
+| `$channel` | `Channel` |
+| `$mode` | `?Mode` |
 | `$direction` | `Direction` |
-| `$type` | `?DocumentType` |
-| `$channel` | `?Channel` |
-| `$reference` | `?string` |
-| `$issueDate` | `?DateTimeImmutable` |
-| `$totalAmount` | `?float` |
-| `$currency` | `?Currency` |
-| `$sender` | `?PartyData` |
-| `$receiver` | `?PartyData` |
+| `$type` | `DocumentType` |
+| `$submissionFormat` | `?SubmissionFormat` |
+| `$sender` | `?ParticipantIdentifier` |
+| `$recipient` | `?ParticipantIdentifier` |
+| `$e2eMessageUuid` | `?string` |
+| `$company` | `?DocumentCompanyData` |
 | `$createdAt` | `?DateTimeImmutable` |
-| `$updatedAt` | `?DateTimeImmutable` |
-| `$deliveredAt` | `?DateTimeImmutable` |
-| `$errors` | `?array` |
 
 ### `ParticipantData`
 
 | Property | Type |
 |---|---|
+| `$channel` | `Channel` |
+| `$mode` | `Mode` |
+| `$entityName` | `string` |
+| `$country` | `string` |
+| `$registrationDate` | `string` |
+| `$orgNo` | `string` |
+| `$registryUrl` | `string` |
+
+### `SendDocumentData`
+
+| Property | Type |
+|---|---|
 | `$id` | `string` |
-| `$name` | `string` |
-| `$scheme` | `?IdentifierScheme` |
-| `$endpoint` | `?string` |
-| `$country` | `?string` |
-| `$documentTypes` | `?array` |
-| `$createdAt` | `?DateTimeImmutable` |
-| `$updatedAt` | `?DateTimeImmutable` |
+| `$e2eMessageUuid` | `string` |
 
 ### `InvoiceDocumentData` (request payload)
 
@@ -485,6 +489,22 @@ All resources return typed DTOs with readonly properties.
 | `$dueDate` | `?string` | No |
 | `$orderReference` | `?string` | No |
 | `$payment` | `?InvoicePaymentData` | No |
+
+### `InvoiceLineData` (request payload)
+
+| Property | Type | Required |
+|---|---|---|
+| `$id` | `int` | Yes |
+| `$name` | `?string` | No |
+| `$description` | `?string` | No |
+| `$quantity` | `?string` | No |
+| `$unitCode` | `?string` | No |
+| `$unitPrice` | `?string` | No |
+| `$lineTotal` | `?string` | No |
+| `$taxCategory` | `?InvoiceTaxCategoryData` | No |
+| `$itemId` | `?string` | No |
+| `$sellersItemId` | `?string` | No |
+| `$buyersItemId` | `?string` | No |
 
 ---
 

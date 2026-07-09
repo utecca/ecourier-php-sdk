@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Ecourier\Requests\Documents;
 
-use Ecourier\Data\DocumentData;
 use Ecourier\Data\Invoice\InvoiceDocumentData;
+use Ecourier\Data\SendDocumentData;
 use Ecourier\Enums\Channel;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
@@ -37,8 +37,8 @@ class SendDocumentAsJsonRequest extends Request implements HasBody
         ];
     }
 
-    public function createDtoFromResponse(Response $response): DocumentData
+    public function createDtoFromResponse(Response $response): SendDocumentData
     {
-        return DocumentData::fromArray($response->array());
+        return SendDocumentData::fromArray($response->array());
     }
 }

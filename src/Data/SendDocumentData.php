@@ -2,30 +2,28 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Data\Invoice;
+namespace Ecourier\Data;
 
-use Ecourier\Enums\IdentifierScheme;
-
-class ParticipantIdentifier
+class SendDocumentData
 {
     public function __construct(
-        public readonly IdentifierScheme $scheme,
         public readonly string $id,
+        public readonly string $e2eMessageUuid,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
-            scheme: IdentifierScheme::from($data['scheme']),
             id: $data['id'],
+            e2eMessageUuid: $data['e2e_message_uuid'],
         );
     }
 
     public function toArray(): array
     {
         return [
-            'scheme' => $this->scheme->value,
             'id' => $this->id,
+            'e2e_message_uuid' => $this->e2eMessageUuid,
         ];
     }
 }

@@ -6,6 +6,7 @@ use Ecourier\Data\ParticipantData;
 use Ecourier\EcourierConnector;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
+use Ecourier\Enums\Mode;
 use Ecourier\Requests\Participants\GetParticipantRequest;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -29,11 +30,27 @@ it('can look up a participant', function () {
     );
 
     expect($participant)->toBeInstanceOf(ParticipantData::class);
-    expect($participant->id)->toBe('part_01ghi');
-    expect($participant->name)->toBe('Beta Ltd');
-    expect($participant->scheme)->toBe(IdentifierScheme::GLN);
-    expect($participant->endpoint)->toBe('5790000123456');
-    expect($participant->documentTypes)->toHaveCount(2);
+    expect($participant->channel)->toBe(Channel::Peppol);
+    expect($participant->mode)->toBe(Mode::Live);
+    expect($participant->entityName)->toBe('GLN Denmark');
+    expect($participant->orgNo)->toBe('9999796418186');
+});
+
+it('maps the lookup response from the api schema', function () {
+    $participant = ParticipantData::fromArray([
+        'channel' => 'Peppol',
+        'mode' => 'Live',
+        'entityName' => 'GLN Denmark',
+        'country' => 'DK',
+        'registrationDate' => '2024-01-01',
+        'orgNo' => '9999796418186',
+        'registryUrl' => 'https://directory.peppol.eu/public/locale-en_US/menuitem-search',
+    ]);
+
+    expect($participant->channel)->toBe(Channel::Peppol);
+    expect($participant->mode)->toBe(Mode::Live);
+    expect($participant->entityName)->toBe('GLN Denmark');
+    expect($participant->orgNo)->toBe('9999796418186');
 });
 
 it('builds the correct lookup endpoint', function () {

@@ -6,7 +6,9 @@ namespace Ecourier\Resources;
 
 use Ecourier\Data\DocumentData;
 use Ecourier\Data\Invoice\InvoiceDocumentData;
+use Ecourier\Data\SendDocumentData;
 use Ecourier\Enums\Channel;
+use Ecourier\Enums\Direction;
 use Ecourier\Enums\DocumentStatus;
 use Ecourier\Enums\IdentifierScheme;
 use Ecourier\Enums\Sort;
@@ -24,16 +26,18 @@ use Saloon\Http\Response;
 class DocumentsResource extends BaseResource
 {
     public function list(
-        ?DocumentStatus $status = null,
-        ?string $createdAt = null,
-        ?string $identityId = null,
+        DocumentStatus|array|null $status = null,
+        Channel|array|null $channel = null,
+        string|array|null $companyId = null,
+        Direction|array|null $direction = null,
         ?Sort $sort = null,
         int $perPage = 10,
     ): DocumentsPaginator {
         $request = new GetDocumentsRequest(
             status: $status,
-            createdAt: $createdAt,
-            identityId: $identityId,
+            channel: $channel,
+            companyId: $companyId,
+            direction: $direction,
             sort: $sort,
             perPage: $perPage,
         );
@@ -51,7 +55,7 @@ class DocumentsResource extends BaseResource
         return $this->get($document)->dto();
     }
 
-    public function sendJson(Channel $channel, InvoiceDocumentData $document): DocumentData
+    public function sendJson(Channel $channel, InvoiceDocumentData $document): SendDocumentData
     {
         return $this->connector->send(new SendDocumentAsJsonRequest($channel, $document))->dto();
     }
@@ -63,7 +67,7 @@ class DocumentsResource extends BaseResource
         string $senderId,
         IdentifierScheme $recipientScheme,
         string $recipientId,
-    ): DocumentData {
+    ): SendDocumentData {
         return $this->connector->send(new SendDocumentAsXmlRequest(
             xml: $xml,
             channel: $channel,

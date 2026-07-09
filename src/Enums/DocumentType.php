@@ -9,5 +9,7 @@ enum DocumentType: string
     case ApplicationResponse = 'ApplicationResponse';
     case CreditNote = 'CreditNote';
     case Invoice = 'Invoice';
+    case EndUserStatisticsReport = 'EndUserStatisticsReport';
+    case TransactionStatisticsReport = 'TransactionStatisticsReport';
     case Other = 'Other';
 }

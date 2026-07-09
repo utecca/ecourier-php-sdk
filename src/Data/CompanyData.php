@@ -5,20 +5,23 @@ declare(strict_types=1);
 namespace Ecourier\Data;
 
 use DateTimeImmutable;
+use Ecourier\Enums\Mode;
 
 class CompanyData
 {
+    /** @param string[] $children @param CompanyParticipantData[] $participants */
     public function __construct(
         public readonly string $id,
         public readonly string $name,
-        public readonly ?string $cvr = null,
-        public readonly ?string $vat = null,
-        public readonly ?string $country = null,
-        public readonly ?string $email = null,
-        public readonly ?string $phone = null,
-        public readonly ?AddressData $address = null,
-        public readonly ?DateTimeImmutable $createdAt = null,
-        public readonly ?DateTimeImmutable $updatedAt = null,
+        public readonly Mode $mode,
+        public readonly string $companyNo,
+        public readonly DateTimeImmutable $createdAt,
+        public readonly DateTimeImmutable $updatedAt,
+        public readonly ?string $parentId,
+        public readonly array $children,
+        public readonly string $country,
+        public readonly ?CompanyAuthorisationData $authorisation,
+        public readonly array $participants,
     ) {}
 
     public static function fromArray(array $data): self
@@ -26,14 +29,15 @@ class CompanyData
         return new self(
             id: $data['id'],
             name: $data['name'],
-            cvr: $data['cvr'] ?? null,
-            vat: $data['vat'] ?? null,
-            country: $data['country'] ?? null,
-            email: $data['email'] ?? null,
-            phone: $data['phone'] ?? null,
-            address: isset($data['address']) ? AddressData::fromArray($data['address']) : null,
-            createdAt: isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
-            updatedAt: isset($data['updated_at']) ? new DateTimeImmutable($data['updated_at']) : null,
+            mode: Mode::from($data['mode']),
+            companyNo: $data['company_no'],
+            createdAt: new DateTimeImmutable($data['created_at']),
+            updatedAt: new DateTimeImmutable($data['updated_at']),
+            parentId: $data['parent_id'],
+            children: $data['children'],
+            country: $data['country'],
+            authorisation: $data['authorisation'] !== null ? CompanyAuthorisationData::fromArray($data['authorisation']) : null,
+            participants: array_map(fn(array $participant) => CompanyParticipantData::fromArray($participant), $data['participants']),
         );
     }
 
@@ -42,14 +46,15 @@ class CompanyData
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'cvr' => $this->cvr,
-            'vat' => $this->vat,
+            'mode' => $this->mode->value,
+            'company_no' => $this->companyNo,
+            'created_at' => $this->createdAt->format('Y-m-d\TH:i:sP'),
+            'updated_at' => $this->updatedAt->format('Y-m-d\TH:i:sP'),
+            'parent_id' => $this->parentId,
+            'children' => $this->children,
             'country' => $this->country,
-            'email' => $this->email,
-            'phone' => $this->phone,
-            'address' => $this->address?->toArray(),
-            'created_at' => $this->createdAt?->format('Y-m-d\TH:i:s\Z'),
-            'updated_at' => $this->updatedAt?->format('Y-m-d\TH:i:s\Z'),
+            'authorisation' => $this->authorisation?->toArray(),
+            'participants' => array_map(fn(CompanyParticipantData $participant) => $participant->toArray(), $this->participants),
         ];
     }
 }

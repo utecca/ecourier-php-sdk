@@ -1,17 +1,33 @@
 {
-    "id": "comp_01abc",
-    "name": "Acme Corporation",
-    "cvr": "12345678",
-    "vat": "DK12345678",
+    "id": "0101knwp96k3ggvkra831yrd74zh",
+    "name": "Acme Danmark A/S",
+    "mode": "Live",
+    "company_no": "12345678",
+    "created_at": "2026-04-11T12:34:56+00:00",
+    "updated_at": "2026-05-21T09:15:30+00:00",
+    "parent_id": null,
+    "children": [
+        "0101knwp96k3ggvkra831yrd76def"
+    ],
     "country": "DK",
-    "email": "billing@acme.com",
-    "phone": "+4512345678",
-    "address": {
-        "street": "Hovedgade 1",
-        "city": "Copenhagen",
-        "zip": "1000",
-        "country": "DK"
+    "authorisation": {
+        "signed": false,
+        "sign_url": "https://app.ecourier.io/end-user/authorise/01kmkdaf55vrrecfy70181tpr6",
+        "signer": {
+            "first_name": "Pernille",
+            "last_name": "Jensen",
+            "title": "CEO"
+        }
     },
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-06-01T00:00:00Z"
+    "participants": [
+        {
+            "id": "0101knwp96k3ggvkra831yrd77ghi",
+            "icd:identifier": "0088:5790000435944",
+            "scheme": "GLN",
+            "identifier": "5790000435944",
+            "channels": [
+                "NemHandel"
+            ]
+        }
+    ]
 }

@@ -1,31 +1,22 @@
 {
-    "id": "doc_01xyz",
+    "id": "01kmkdaf55vrrecfy70180tpr6",
     "status": "Delivered",
+    "channel": "NemHandel",
+    "mode": "Live",
     "direction": "Send",
     "type": "Invoice",
-    "channel": "NemHandel",
-    "reference": "INV-2024-001",
-    "issue_date": "2024-06-01",
-    "total_amount": 1250.00,
-    "currency": "DKK",
+    "submission_format": "JSON",
     "sender": {
-        "id": "comp_01abc",
-        "name": "Acme Corporation",
-        "cvr": "12345678",
-        "vat": "DK12345678",
-        "country": "DK",
-        "email": "billing@acme.com"
+        "scheme": "DK:CVR",
+        "id": "12345678"
     },
-    "receiver": {
-        "id": "comp_02def",
-        "name": "Beta Ltd",
-        "cvr": "87654321",
-        "vat": "DK87654321",
-        "country": "DK",
-        "email": "invoices@beta.com"
+    "recipient": {
+        "scheme": "GLN",
+        "id": "5790000123456"
     },
-    "created_at": "2024-06-01T10:00:00Z",
-    "updated_at": "2024-06-01T10:05:00Z",
-    "delivered_at": "2024-06-01T10:05:00Z",
-    "errors": null
+    "e2e_message_uuid": "ddc3b3ef-cbd4-4630-9d65-896b3e1abc61",
+    "company": {
+        "id": "0101knwp96k3ggvkra831yrd74zh",
+        "name": "Acme Danmark A/S"
+    }
 }

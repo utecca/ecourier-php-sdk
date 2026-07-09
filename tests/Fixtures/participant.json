@@ -1,13 +1,9 @@
 {
-    "id": "part_01ghi",
-    "name": "Beta Ltd",
-    "scheme": "GLN",
-    "endpoint": "5790000123456",
+    "channel": "Peppol",
+    "mode": "Live",
+    "entityName": "GLN Denmark",
     "country": "DK",
-    "document_types": [
-        "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
-        "urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2"
-    ],
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-06-01T00:00:00Z"
+    "registrationDate": "2024-01-01",
+    "orgNo": "9999796418186",
+    "registryUrl": "https://directory.peppol.eu/public/locale-en_US/menuitem-search"
 }
