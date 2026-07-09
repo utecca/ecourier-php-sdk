@@ -1,0 +1,22 @@
+{
+    "data": [
+        {
+            "id": "0101knwp96k3ggvkra831yrd74zh",
+            "name": "Acme Danmark A/S",
+            "country": "DK",
+            "company_no": "12345678"
+        }
+    ],
+    "links": {
+        "first": "https://api.ecourier.io/v1/companies?page=1",
+        "last": "https://api.ecourier.io/v1/companies?page=1",
+        "prev": null,
+        "next": null
+    },
+    "meta": {
+        "current_page": 1,
+        "last_page": 1,
+        "per_page": 25,
+        "total": 1
+    }
+}

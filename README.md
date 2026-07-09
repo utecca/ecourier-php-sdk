@@ -44,13 +44,28 @@ The SDK is organized into three resources, accessible as methods on the connecto
 
 | Resource | Method | Covers |
 |---|---|---|
-| Companies | `$ecourier->companies()` | Look up company details |
+| Companies | `$ecourier->companies()` | List, create, update, delete, and inspect companies |
 | Documents | `$ecourier->documents()` | Send, receive, and inspect invoices |
 | Participants | `$ecourier->participants()` | Look up network participants |
 
 ---
 
 ## Companies
+
+### List companies
+
+```php
+use Ecourier\Enums\Channel;
+
+$companies = $ecourier->companies()
+    ->list(
+        channel: Channel::Peppol,
+        country: 'DK',
+        signed: false,
+        perPage: 50,
+    )
+    ->collect();
+```
 
 ### Get a company
 
@@ -69,6 +84,41 @@ $response = $ecourier->companies()->get('comp_01abc');
 
 $response->status(); // 200
 $response->json();   // raw array
+```
+
+### Create a company
+
+```php
+use Ecourier\Data\CompanyAuthorisationSignerData;
+use Ecourier\Data\CreateCompanyData;
+
+$company = $ecourier->companies()->create(new CreateCompanyData(
+    name: 'Acme Danmark A/S',
+    country: 'DK',
+    companyNo: '12345678',
+    signer: new CompanyAuthorisationSignerData(
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        title: 'CEO',
+    ),
+));
+```
+
+### Update a company
+
+```php
+$company = $ecourier->companies()->update(
+    company: '0101knwp96k3ggvkra831yrd74zh',
+    name: 'Acme Danmark A/S',
+);
+```
+
+### Delete a company
+
+```php
+$response = $ecourier->companies()->delete('0101knwp96k3ggvkra831yrd74zh');
+
+$response->status(); // 204
 ```
 
 ---
@@ -421,6 +471,15 @@ $ecourier->companies()->find('comp_missing');
 
 All resources return typed DTOs with readonly properties.
 
+### `CompanyListItemData`
+
+| Property | Type |
+|---|---|
+| `$id` | `string` |
+| `$name` | `string` |
+| `$country` | `string` |
+| `$companyNo` | `string` |
+
 ### `CompanyData`
 
 | Property | Type |
@@ -436,6 +495,16 @@ All resources return typed DTOs with readonly properties.
 | `$country` | `string` |
 | `$authorisation` | `?CompanyAuthorisationData` |
 | `$participants` | `CompanyParticipantData[]` |
+
+### `CreateCompanyData` (request payload)
+
+| Property | Type | Required |
+|---|---|---|
+| `$name` | `string` | Yes |
+| `$country` | `string` | Yes |
+| `$companyNo` | `string` | Yes |
+| `$signer` | `CompanyAuthorisationSignerData` | Yes |
+| `$parentId` | `?string` | No |
 
 ### `DocumentData`
 
