@@ -7,7 +7,7 @@ use Ecourier\EcourierConnector;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
 use Ecourier\Enums\Mode;
-use Ecourier\Requests\Participants\GetParticipantRequest;
+use Ecourier\Requests\Lookup\GetParticipantRequest;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
@@ -23,7 +23,7 @@ it('can look up a participant', function () {
     $connector = new EcourierConnector(apiKey: 'pk_test_fake');
     $connector->withMockClient($mockClient);
 
-    $participant = $connector->participants()->find(
+    $participant = $connector->lookup()->findParticipant(
         channel: Channel::Peppol,
         scheme: IdentifierScheme::GLN,
         participantId: '5790000123456',

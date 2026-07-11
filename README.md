@@ -6,7 +6,7 @@
 [![PHP](https://img.shields.io/badge/php-%5E8.3-blue)](https://www.php.net)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-Send and receive electronic invoices through the eCourier network from your PHP application. The SDK wraps the full [eCourier REST API v1](https://docs.ecourier.io/api-reference/v1) and gives you typed responses, automatic pagination, and clear exceptions for every error case.
+Send and receive electronic documents, such as invoices and credit notes, from your PHP application. The SDK wraps the full [eCourier REST API v1](https://docs.ecourier.io/api-reference/v1) and gives you typed responses, automatic pagination, and clear exceptions for every error case.
 
 ---
 
@@ -45,8 +45,8 @@ The SDK is organized into three resources, accessible as methods on the connecto
 | Resource | Method | Covers |
 |---|---|---|
 | Companies | `$ecourier->companies()` | List, create, update, delete, and inspect companies |
-| Documents | `$ecourier->documents()` | Send, receive, and inspect invoices |
-| Participants | `$ecourier->participants()` | Look up network participants |
+| Documents | `$ecourier->documents()` | Send, receive, and inspect documents, such as invoices and credit notes |
+| Lookup | `$ecourier->lookup()` | Look up network participants |
 
 ---
 
@@ -247,15 +247,15 @@ file_put_contents('invoice.pdf', $pdf);
 
 ---
 
-## Participants
+## Lookup
 
-Look up whether a company is reachable on an eCourier network.
+Look up whether a company is reachable on a given channel.
 
 ```php
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
 
-$participant = $ecourier->participants()->find(
+$participant = $ecourier->lookup()->findParticipant(
     channel: Channel::Peppol,
     scheme: IdentifierScheme::GLN,
     participantId: '5790000123456',

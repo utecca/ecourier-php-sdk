@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Requests\Participants;
+namespace Ecourier\Requests\Lookup;
 
 use Ecourier\Data\ParticipantData;
 use Ecourier\Enums\Channel;

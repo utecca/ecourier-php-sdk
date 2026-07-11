@@ -10,7 +10,7 @@ use Ecourier\Exceptions\NotFoundException;
 use Ecourier\Exceptions\ValidationException;
 use Ecourier\Resources\CompaniesResource;
 use Ecourier\Resources\DocumentsResource;
-use Ecourier\Resources\ParticipantsResource;
+use Ecourier\Resources\LookupResource;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector;
 use Saloon\Http\Response;
@@ -73,8 +73,8 @@ class EcourierConnector extends Connector
         return new DocumentsResource($this);
     }
 
-    public function participants(): ParticipantsResource
+    public function lookup(): LookupResource
     {
-        return new ParticipantsResource($this);
+        return new LookupResource($this);
     }
 }
