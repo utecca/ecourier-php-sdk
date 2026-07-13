@@ -5,52 +5,42 @@ declare(strict_types=1);
 namespace Ecourier\Data\Webhook;
 
 use DateTimeImmutable;
+use Ecourier\Enums\Mode;
+use Ecourier\Enums\WebhookEventType;
 
-class DocumentWebhook
+final class DocumentWebhook extends WebhookEvent
 {
     public function __construct(
-        public readonly string $eventId,
-        public readonly string $event,
-        public readonly DateTimeImmutable $occurredAt,
-        public readonly int $version,
-        public readonly string $teamId,
-        public readonly string $mode,
-        public readonly string $companyId,
+        string $eventId,
+        WebhookEventType $event,
+        DateTimeImmutable $occurredAt,
+        int $version,
+        string $teamId,
+        Mode $mode,
+        string $companyId,
         public readonly DocumentData $document,
-    ) {}
+    ) {
+        parent::__construct($eventId, $event, $occurredAt, $version, $teamId, $mode, $companyId);
+    }
 
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data): static
     {
         return new self(
             eventId: $data['event_id'],
-            event: $data['event'],
+            event: WebhookEventType::from($data['event']),
             occurredAt: new DateTimeImmutable($data['occurred_at']),
             version: (int) $data['version'],
             teamId: $data['team_id'],
-            mode: $data['mode'],
+            mode: Mode::from($data['mode']),
             companyId: $data['company_id'],
             document: DocumentData::fromArray($data['payload']['document']),
         );
     }
 
-    public static function fromRequestBody(string $body): self
-    {
-        return self::fromArray(json_decode($body, true, flags: JSON_THROW_ON_ERROR));
-    }
-
-    public function toArray(): array
+    protected function payloadToArray(): array
     {
         return [
-            'event_id' => $this->eventId,
-            'event' => $this->event,
-            'occurred_at' => $this->occurredAt->format('Y-m-d\TH:i:s\Z'),
-            'version' => $this->version,
-            'team_id' => $this->teamId,
-            'mode' => $this->mode,
-            'company_id' => $this->companyId,
-            'payload' => [
-                'document' => $this->document->toArray(),
-            ],
+            'document' => $this->document->toArray(),
         ];
     }
 }

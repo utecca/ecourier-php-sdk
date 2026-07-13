@@ -4,30 +4,42 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Webhook;
 
-use InvalidArgumentException;
+use DateTimeImmutable;
+use Ecourier\Enums\Mode;
+use Ecourier\Enums\WebhookEventType;
 
-class WebhookEvent
+abstract class WebhookEvent
 {
-    private const DOCUMENT_EVENTS = [
-        'Document.Send.Created',
-        'Document.Send.Delivered',
-        'Document.Send.Failed',
-        'Document.Receive.Created',
-        'Document.Receive.Ready',
-        'Document.Receive.Delivered',
-    ];
+    public function __construct(
+        public readonly string $eventId,
+        public readonly WebhookEventType $event,
+        public readonly DateTimeImmutable $occurredAt,
+        public readonly int $version,
+        public readonly string $teamId,
+        public readonly Mode $mode,
+        public readonly string $companyId,
+    ) {}
 
-    public static function fromRequestBody(string $body): DocumentWebhook
+    abstract public static function fromArray(array $data): static;
+
+    abstract protected function payloadToArray(): array;
+
+    public static function fromRequestBody(string $body): static
     {
-        return self::fromArray(json_decode($body, true, flags: JSON_THROW_ON_ERROR));
+        return static::fromArray(json_decode($body, true, flags: JSON_THROW_ON_ERROR));
     }
 
-    public static function fromArray(array $data): DocumentWebhook
+    public function toArray(): array
     {
-        if (! in_array($data['event'] ?? null, self::DOCUMENT_EVENTS, true)) {
-            throw new InvalidArgumentException('Unknown webhook event.');
-        }
-
-        return DocumentWebhook::fromArray($data);
+        return [
+            'event_id' => $this->eventId,
+            'event' => $this->event->value,
+            'occurred_at' => $this->occurredAt->format('Y-m-d\TH:i:s\Z'),
+            'version' => $this->version,
+            'team_id' => $this->teamId,
+            'mode' => $this->mode->value,
+            'company_id' => $this->companyId,
+            'payload' => $this->payloadToArray(),
+        ];
     }
 }
