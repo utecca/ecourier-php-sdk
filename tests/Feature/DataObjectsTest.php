@@ -108,7 +108,8 @@ it('serializes DocumentData to array with all keys', function () {
         submissionFormat: SubmissionFormat::JSON,
         sender: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '12345678'),
         recipient: new ParticipantIdentifier(IdentifierScheme::GLN, '5790000123456'),
-        e2eMessageUuid: 'ddc3b3ef-cbd4-4630-9d65-896b3e1abc61',
+        latestE2eMessageUuid: 'ddc3b3ef-cbd4-4630-9d65-896b3e1abc61',
+        latestE2eTransmissionId: 'trans_01def',
         createdAt: new DateTimeImmutable('2024-06-01T10:00:00Z'),
     );
 
@@ -123,7 +124,8 @@ it('serializes DocumentData to array with all keys', function () {
     expect($result['submission_format'])->toBe('JSON');
     expect($result['sender']['scheme'])->toBe('DK:CVR');
     expect($result['recipient']['id'])->toBe('5790000123456');
-    expect($result['e2e_message_uuid'])->toBe('ddc3b3ef-cbd4-4630-9d65-896b3e1abc61');
+    expect($result['latest_e2e_message_uuid'])->toBe('ddc3b3ef-cbd4-4630-9d65-896b3e1abc61');
+    expect($result['latest_e2e_transmission_id'])->toBe('trans_01def');
     expect($result['created_at'])->toBe('2024-06-01T10:00:00Z');
 });
 
@@ -141,7 +143,7 @@ it('includes null values in DocumentData toArray', function () {
 
     expect($result)->toHaveKeys([
         'id', 'status', 'channel', 'mode', 'direction', 'type', 'submission_format',
-        'sender', 'recipient', 'e2e_message_uuid', 'company', 'created_at',
+        'sender', 'recipient', 'latest_e2e_message_uuid', 'latest_e2e_transmission_id', 'company', 'created_at',
     ]);
     expect($result['mode'])->toBeNull();
     expect($result['sender'])->toBeNull();
@@ -174,7 +176,8 @@ it('roundtrips DocumentData through fromArray and toArray', function () {
     expect($result['direction'])->toBe($fixture['direction']);
     expect($result['type'])->toBe($fixture['type']);
     expect($result['submission_format'])->toBe($fixture['submission_format']);
-    expect($result['e2e_message_uuid'])->toBe($fixture['e2e_message_uuid']);
+    expect($result['latest_e2e_message_uuid'])->toBe($fixture['latest_e2e_message_uuid']);
+    expect($result['latest_e2e_transmission_id'])->toBe($fixture['latest_e2e_transmission_id']);
 });
 
 // --- CompanyData ---

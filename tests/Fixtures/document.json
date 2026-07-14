@@ -14,7 +14,8 @@
         "scheme": "GLN",
         "id": "5790000123456"
     },
-    "e2e_message_uuid": "ddc3b3ef-cbd4-4630-9d65-896b3e1abc61",
+    "latest_e2e_message_uuid": "ddc3b3ef-cbd4-4630-9d65-896b3e1abc61",
+    "latest_e2e_transmission_id": "trans_01def",
     "company": {
         "id": "0101knwp96k3ggvkra831yrd74zh",
         "name": "Acme Danmark A/S"

@@ -25,7 +25,8 @@ class DocumentData
         public readonly ?SubmissionFormat $submissionFormat = null,
         public readonly ?ParticipantIdentifier $sender = null,
         public readonly ?ParticipantIdentifier $recipient = null,
-        public readonly ?string $e2eMessageUuid = null,
+        public readonly ?string $latestE2eMessageUuid = null,
+        public readonly ?string $latestE2eTransmissionId = null,
         public readonly ?DocumentCompanyData $company = null,
         public readonly ?DateTimeImmutable $createdAt = null,
     ) {}
@@ -42,7 +43,8 @@ class DocumentData
             submissionFormat: isset($data['submission_format']) ? SubmissionFormat::from($data['submission_format']) : null,
             sender: isset($data['sender']) ? ParticipantIdentifier::fromArray($data['sender']) : null,
             recipient: isset($data['recipient']) ? ParticipantIdentifier::fromArray($data['recipient']) : null,
-            e2eMessageUuid: $data['e2e_message_uuid'] ?? null,
+            latestE2eMessageUuid: $data['latest_e2e_message_uuid'] ?? null,
+            latestE2eTransmissionId: $data['latest_e2e_transmission_id'] ?? null,
             company: isset($data['company']) && $data['company'] !== null ? DocumentCompanyData::fromArray($data['company']) : null,
             createdAt: isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
         );
@@ -60,7 +62,8 @@ class DocumentData
             'submission_format' => $this->submissionFormat?->value,
             'sender' => $this->sender?->toArray(),
             'recipient' => $this->recipient?->toArray(),
-            'e2e_message_uuid' => $this->e2eMessageUuid,
+            'latest_e2e_message_uuid' => $this->latestE2eMessageUuid,
+            'latest_e2e_transmission_id' => $this->latestE2eTransmissionId,
             'company' => $this->company?->toArray(),
             'created_at' => $this->createdAt?->format('Y-m-d\TH:i:s\Z'),
         ];

@@ -519,7 +519,8 @@ All resources return typed DTOs with readonly properties.
 | `$submissionFormat` | `?SubmissionFormat` |
 | `$sender` | `?ParticipantIdentifier` |
 | `$recipient` | `?ParticipantIdentifier` |
-| `$e2eMessageUuid` | `?string` |
+| `$latestE2eMessageUuid` | `?string` |
+| `$latestE2eTransmissionId` | `?string` |
 | `$company` | `?DocumentCompanyData` |
 | `$createdAt` | `?DateTimeImmutable` |
 

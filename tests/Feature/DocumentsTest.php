@@ -30,6 +30,7 @@ use Ecourier\Enums\TaxCategoryCode;
 use Ecourier\Pagination\DocumentsPaginator;
 use Ecourier\Requests\Documents\GetDocumentRequest;
 use Ecourier\Requests\Documents\GetDocumentsRequest;
+use Ecourier\Requests\Documents\MarkDocumentDeliveredRequest;
 use Ecourier\Requests\Documents\SendDocumentAsJsonRequest;
 use Ecourier\Requests\Documents\SendDocumentAsXmlRequest;
 use Saloon\Http\Faking\MockClient;
@@ -83,8 +84,39 @@ it('can get a document', function () {
     expect($document->submissionFormat)->toBe(SubmissionFormat::JSON);
     expect($document->sender?->scheme)->toBe(IdentifierScheme::DK_CVR);
     expect($document->recipient?->id)->toBe('5790000123456');
-    expect($document->e2eMessageUuid)->toBe('ddc3b3ef-cbd4-4630-9d65-896b3e1abc61');
+    expect($document->latestE2eMessageUuid)->toBe('ddc3b3ef-cbd4-4630-9d65-896b3e1abc61');
+    expect($document->latestE2eTransmissionId)->toBe('trans_01def');
     expect($document->company?->name)->toBe('Acme Danmark A/S');
+});
+
+// --- MarkDocumentDeliveredRequest ---
+
+it('can mark a document as delivered', function () {
+    $mockClient = new MockClient([
+        MarkDocumentDeliveredRequest::class => MockResponse::make(
+            body: file_get_contents(__DIR__ . '/../Fixtures/document.json'),
+            status: 200,
+            headers: ['Content-Type' => 'application/json'],
+        ),
+    ]);
+
+    $connector = new EcourierConnector(apiKey: 'pk_test_fake');
+    $connector->withMockClient($mockClient);
+
+    $document = $connector->documents()->markDelivered('01kmkdaf55vrrecfy70180tpr6');
+
+    expect($document)->toBeInstanceOf(DocumentData::class);
+    expect($document->id)->toBe('01kmkdaf55vrrecfy70180tpr6');
+    $mockClient->assertSent(function (MarkDocumentDeliveredRequest $request): bool {
+        return $request->resolveEndpoint() === '/documents/01kmkdaf55vrrecfy70180tpr6/delivered'
+            && $request->body()->all() === ['delivered' => true];
+    });
+});
+
+it('can move a document back to ready', function () {
+    $request = new MarkDocumentDeliveredRequest('01kmkdaf55vrrecfy70180tpr6', delivered: false);
+
+    expect($request->body()->all())->toBe(['delivered' => false]);
 });
 
 // --- GetDocumentsRequest ---

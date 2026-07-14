@@ -18,6 +18,7 @@ use Ecourier\Requests\Documents\GetDocumentRequest;
 use Ecourier\Requests\Documents\GetDocumentContentRequest;
 use Ecourier\Requests\Documents\GetDocumentHtmlRequest;
 use Ecourier\Requests\Documents\GetDocumentPdfRequest;
+use Ecourier\Requests\Documents\MarkDocumentDeliveredRequest;
 use Ecourier\Requests\Documents\SendDocumentAsJsonRequest;
 use Ecourier\Requests\Documents\SendDocumentAsXmlRequest;
 use Saloon\Http\BaseResource;
@@ -91,5 +92,10 @@ class DocumentsResource extends BaseResource
     public function renderAsPdf(string $document): Response
     {
         return $this->connector->send(new GetDocumentPdfRequest($document));
+    }
+
+    public function markDelivered(string $document, bool $delivered = true): DocumentData
+    {
+        return $this->connector->send(new MarkDocumentDeliveredRequest($document, $delivered))->dto();
     }
 }
