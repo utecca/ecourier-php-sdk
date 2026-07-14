@@ -7,6 +7,7 @@ use Ecourier\Data\CompanyData;
 use Ecourier\Data\DocumentData;
 use Ecourier\Data\Invoice\ParticipantIdentifier;
 use Ecourier\Data\ParticipantData;
+use Ecourier\Data\ParticipantLookupData;
 use Ecourier\Data\PartyData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Direction;
@@ -152,7 +153,7 @@ it('includes null values in DocumentData toArray', function () {
 
 it('serializes DocumentData sender and recipient via ParticipantIdentifier toArray', function () {
     $document = DocumentData::fromArray(
-        json_decode(file_get_contents(__DIR__ . '/../Fixtures/document.json'), true)
+        json_decode(file_get_contents(__DIR__ . '/../Fixtures/document.json'), true),
     );
 
     $result = $document->toArray();
@@ -208,14 +209,14 @@ it('serializes CompanyData to array with all keys', function () {
 
 it('serializes CompanyData nested authorisation and participants', function () {
     $company = CompanyData::fromArray(
-        json_decode(file_get_contents(__DIR__ . '/../Fixtures/company.json'), true)
+        json_decode(file_get_contents(__DIR__ . '/../Fixtures/company.json'), true),
     );
 
     $result = $company->toArray();
 
     expect($result['authorisation'])->toBeArray();
     expect($result['authorisation']['signer']['first_name'])->toBe('Pernille');
-    expect($result['participants'][0]['icd:identifier'])->toBe('0088:5790000435944');
+    expect($result['participants'][0]['full_identifier'])->toBe('0088:5790000435944');
 });
 
 it('roundtrips CompanyData through fromArray and toArray', function () {
@@ -231,10 +232,10 @@ it('roundtrips CompanyData through fromArray and toArray', function () {
     expect($result['children'])->toBe($fixture['children']);
 });
 
-// --- ParticipantData ---
+// --- ParticipantLookupData ---
 
-it('serializes ParticipantData to array with all keys', function () {
-    $participant = new ParticipantData(
+it('serializes ParticipantLookupData to array with all keys', function () {
+    $participant = new ParticipantLookupData(
         channel: Channel::Peppol,
         mode: Mode::Live,
         entityName: 'GLN Denmark',
@@ -252,14 +253,30 @@ it('serializes ParticipantData to array with all keys', function () {
     expect($result['orgNo'])->toBe('9999796418186');
 });
 
-it('roundtrips ParticipantData through fromArray and toArray', function () {
-    $fixture = json_decode(file_get_contents(__DIR__ . '/../Fixtures/participant.json'), true);
+it('roundtrips ParticipantLookupData through fromArray and toArray', function () {
+    $fixture = json_decode(file_get_contents(__DIR__ . '/../Fixtures/lookup-participant.json'), true);
 
-    $result = ParticipantData::fromArray($fixture)->toArray();
+    $result = ParticipantLookupData::fromArray($fixture)->toArray();
 
     expect($result['channel'])->toBe($fixture['channel']);
     expect($result['mode'])->toBe($fixture['mode']);
     expect($result['entityName'])->toBe($fixture['entityName']);
     expect($result['country'])->toBe($fixture['country']);
     expect($result['orgNo'])->toBe($fixture['orgNo']);
+});
+
+// --- ParticipantData ---
+
+it('roundtrips ParticipantData through fromArray and toArray', function () {
+    $fixture = json_decode(file_get_contents(__DIR__ . '/../Fixtures/participant.json'), true);
+
+    $result = ParticipantData::fromArray($fixture)->toArray();
+
+    expect($result['id'])->toBe($fixture['id']);
+    expect($result['company'])->toBe($fixture['company']);
+    expect($result['mode'])->toBe($fixture['mode']);
+    expect($result['scheme'])->toBe($fixture['scheme']);
+    expect($result['identifier'])->toBe($fixture['identifier']);
+    expect($result['full_identifier'])->toBe($fixture['full_identifier']);
+    expect($result['channels'])->toBe($fixture['channels']);
 });

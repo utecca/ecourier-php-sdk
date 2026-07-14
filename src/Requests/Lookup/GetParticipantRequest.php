@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Requests\Lookup;
 
-use Ecourier\Data\ParticipantData;
+use Ecourier\Data\ParticipantLookupData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
 use Saloon\Enums\Method;
@@ -23,11 +23,11 @@ class GetParticipantRequest extends Request
 
     public function resolveEndpoint(): string
     {
-        return "/lookup/{$this->channel->value}/{$this->scheme->value}/{$this->participantId}";
+        return "/lookup/participants/{$this->channel->value}/{$this->scheme->value}/{$this->participantId}";
     }
 
-    public function createDtoFromResponse(Response $response): ParticipantData
+    public function createDtoFromResponse(Response $response): ParticipantLookupData
     {
-        return ParticipantData::fromArray($response->array());
+        return ParticipantLookupData::fromArray($response->array());
     }
 }

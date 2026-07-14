@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Resources;
 
-use Ecourier\Data\ParticipantData;
+use Ecourier\Data\ParticipantLookupData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
 use Ecourier\Requests\Lookup\GetParticipantRequest;
@@ -18,7 +18,7 @@ class LookupResource extends BaseResource
         return $this->connector->send(new GetParticipantRequest($channel, $scheme, $participantId));
     }
 
-    public function findParticipant(Channel $channel, IdentifierScheme $scheme, string $participantId): ParticipantData
+    public function findParticipant(Channel $channel, IdentifierScheme $scheme, string $participantId): ParticipantLookupData
     {
         return $this->get($channel, $scheme, $participantId)->dto();
     }

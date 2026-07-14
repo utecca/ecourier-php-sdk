@@ -12,7 +12,7 @@ class CompanyParticipantData
     /** @param Channel[] $channels */
     public function __construct(
         public readonly string $id,
-        public readonly string $icdIdentifier,
+        public readonly string $fullIdentifier,
         public readonly IdentifierScheme $scheme,
         public readonly string $identifier,
         public readonly array $channels,
@@ -22,7 +22,7 @@ class CompanyParticipantData
     {
         return new self(
             id: $data['id'],
-            icdIdentifier: $data['icd:identifier'],
+            fullIdentifier: $data['full_identifier'],
             scheme: IdentifierScheme::from($data['scheme']),
             identifier: $data['identifier'],
             channels: array_map(fn(string $channel) => Channel::from($channel), $data['channels']),
@@ -33,7 +33,7 @@ class CompanyParticipantData
     {
         return [
             'id' => $this->id,
-            'icd:identifier' => $this->icdIdentifier,
+            'full_identifier' => $this->fullIdentifier,
             'scheme' => $this->scheme->value,
             'identifier' => $this->identifier,
             'channels' => array_map(fn(Channel $channel) => $channel->value, $this->channels),

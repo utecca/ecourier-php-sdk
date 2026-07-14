@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Ecourier\Data\ParticipantData;
+use Ecourier\Data\ParticipantLookupData;
 use Ecourier\EcourierConnector;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
@@ -14,7 +14,7 @@ use Saloon\Http\Faking\MockResponse;
 it('can look up a participant', function () {
     $mockClient = new MockClient([
         GetParticipantRequest::class => MockResponse::make(
-            body: file_get_contents(__DIR__ . '/../Fixtures/participant.json'),
+            body: file_get_contents(__DIR__ . '/../Fixtures/lookup-participant.json'),
             status: 200,
             headers: ['Content-Type' => 'application/json'],
         ),
@@ -29,7 +29,7 @@ it('can look up a participant', function () {
         participantId: '5790000123456',
     );
 
-    expect($participant)->toBeInstanceOf(ParticipantData::class);
+    expect($participant)->toBeInstanceOf(ParticipantLookupData::class);
     expect($participant->channel)->toBe(Channel::Peppol);
     expect($participant->mode)->toBe(Mode::Live);
     expect($participant->entityName)->toBe('GLN Denmark');
@@ -37,7 +37,7 @@ it('can look up a participant', function () {
 });
 
 it('maps the lookup response from the api schema', function () {
-    $participant = ParticipantData::fromArray([
+    $participant = ParticipantLookupData::fromArray([
         'channel' => 'Peppol',
         'mode' => 'Live',
         'entityName' => 'GLN Denmark',
@@ -53,6 +53,20 @@ it('maps the lookup response from the api schema', function () {
     expect($participant->orgNo)->toBe('9999796418186');
 });
 
+it('maps a lookup response with no known country to null', function () {
+    $participant = ParticipantLookupData::fromArray([
+        'channel' => 'Peppol',
+        'mode' => 'Live',
+        'entityName' => 'Unknown Registry Co',
+        'country' => null,
+        'registrationDate' => '2024-01-01',
+        'orgNo' => '123456789',
+        'registryUrl' => 'https://directory.peppol.eu/public/locale-en_US/menuitem-search',
+    ]);
+
+    expect($participant->country)->toBeNull();
+});
+
 it('builds the correct lookup endpoint', function () {
     $request = new GetParticipantRequest(
         channel: Channel::NemHandel,
@@ -60,5 +74,5 @@ it('builds the correct lookup endpoint', function () {
         participantId: '12345678',
     );
 
-    expect($request->resolveEndpoint())->toBe('/lookup/NemHandel/DK:CVR/12345678');
+    expect($request->resolveEndpoint())->toBe('/lookup/participants/NemHandel/DK:CVR/12345678');
 });

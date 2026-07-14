@@ -40,13 +40,14 @@ All requests are authenticated automatically via `Authorization: Bearer` — you
 
 ## Resources
 
-The SDK is organized into three resources, accessible as methods on the connector.
+The SDK is organized into four resources, accessible as methods on the connector.
 
 | Resource | Method | Covers |
 |---|---|---|
 | Companies | `$ecourier->companies()` | List, create, update, delete, and inspect companies |
 | Documents | `$ecourier->documents()` | Send, receive, and inspect documents, such as invoices and credit notes |
-| Lookup | `$ecourier->lookup()` | Look up network participants |
+| Participants | `$ecourier->participants()` | List, create, update, delete, and inspect participants |
+| Lookup | `$ecourier->lookup()` | Look up network participants by channel, scheme, and ID |
 
 ---
 
@@ -243,6 +244,85 @@ $html = $ecourier->documents()->renderAsHtml('doc_01xyz')->body();
 $pdf  = $ecourier->documents()->renderAsPdf('doc_01xyz')->body();
 
 file_put_contents('invoice.pdf', $pdf);
+```
+
+---
+
+## Participants
+
+Participants are how a company registers to send and receive documents on a channel (NemHandel or Peppol).
+
+### List participants
+
+```php
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\IdentifierScheme;
+
+$participants = $ecourier->participants()
+    ->list(
+        companyId: '0101knwp96k3ggvkra831yrd74zh',
+        scheme: IdentifierScheme::GLN,
+        channel: Channel::NemHandel,
+        perPage: 50,
+    )
+    ->collect();
+```
+
+### Get a participant
+
+```php
+$participant = $ecourier->participants()->find('0101knwp96k3ggvkra831yrd77ghi');
+
+echo $participant->company->name;   // Acme Danmark A/S
+echo $participant->fullIdentifier;  // 0088:5790000435944
+echo $participant->mode;            // Mode::Live
+```
+
+`find()` returns a typed `ParticipantData` DTO. If you need the raw `Response` object instead, use `get()`:
+
+```php
+$response = $ecourier->participants()->get('0101knwp96k3ggvkra831yrd77ghi');
+
+$response->status(); // 200
+$response->json();   // raw array
+```
+
+### Create a participant
+
+Leave `identifier` unset (or `null`) when the scheme is `GLN` — a GLN is assigned automatically.
+
+```php
+use Ecourier\Data\CreateParticipantData;
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\IdentifierScheme;
+
+$participant = $ecourier->participants()->create(new CreateParticipantData(
+    companyId: '0101knwp96k3ggvkra831yrd74zh',
+    scheme: IdentifierScheme::DK_CVR,
+    channels: [Channel::NemHandel],
+    identifier: '12345678',
+));
+```
+
+### Update a participant
+
+Update replaces the full set of channels the participant is registered on — channels not listed are removed.
+
+```php
+use Ecourier\Enums\Channel;
+
+$participant = $ecourier->participants()->update(
+    participant: '0101knwp96k3ggvkra831yrd77ghi',
+    channels: [Channel::NemHandel, Channel::Peppol],
+);
+```
+
+### Delete a participant
+
+```php
+$response = $ecourier->participants()->delete('0101knwp96k3ggvkra831yrd77ghi');
+
+$response->status(); // 204
 ```
 
 ---
@@ -528,10 +608,40 @@ All resources return typed DTOs with readonly properties.
 
 | Property | Type |
 |---|---|
+| `$id` | `string` |
+| `$company` | `ParticipantCompanyData` |
+| `$mode` | `Mode` |
+| `$scheme` | `IdentifierScheme` |
+| `$identifier` | `string` |
+| `$fullIdentifier` | `string` |
+| `$channels` | `Channel[]` |
+| `$createdAt` | `DateTimeImmutable` |
+| `$updatedAt` | `DateTimeImmutable` |
+
+### `ParticipantCompanyData`
+
+| Property | Type |
+|---|---|
+| `$id` | `string` |
+| `$name` | `string` |
+
+### `CreateParticipantData` (request payload)
+
+| Property | Type | Required |
+|---|---|---|
+| `$companyId` | `string` | Yes |
+| `$scheme` | `IdentifierScheme` | Yes |
+| `$channels` | `Channel[]` | Yes |
+| `$identifier` | `?string` | No — leave `null` for GLN |
+
+### `ParticipantLookupData`
+
+| Property | Type |
+|---|---|
 | `$channel` | `Channel` |
 | `$mode` | `Mode` |
 | `$entityName` | `string` |
-| `$country` | `string` |
+| `$country` | `?string` |
 | `$registrationDate` | `string` |
 | `$orgNo` | `string` |
 | `$registryUrl` | `string` |

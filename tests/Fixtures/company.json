@@ -22,7 +22,7 @@
     "participants": [
         {
             "id": "0101knwp96k3ggvkra831yrd77ghi",
-            "icd:identifier": "0088:5790000435944",
+            "full_identifier": "0088:5790000435944",
             "scheme": "GLN",
             "identifier": "5790000435944",
             "channels": [

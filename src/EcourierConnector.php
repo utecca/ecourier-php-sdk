@@ -11,6 +11,7 @@ use Ecourier\Exceptions\ValidationException;
 use Ecourier\Resources\CompaniesResource;
 use Ecourier\Resources\DocumentsResource;
 use Ecourier\Resources\LookupResource;
+use Ecourier\Resources\ParticipantsResource;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector;
 use Saloon\Http\Response;
@@ -76,5 +77,10 @@ class EcourierConnector extends Connector
     public function lookup(): LookupResource
     {
         return new LookupResource($this);
+    }
+
+    public function participants(): ParticipantsResource
+    {
+        return new ParticipantsResource($this);
     }
 }
