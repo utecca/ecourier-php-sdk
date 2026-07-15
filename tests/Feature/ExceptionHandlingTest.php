@@ -72,7 +72,7 @@ it('throws validation exception on 422 with errors', function () {
         currency: Currency::DKK,
         supplier: new InvoicePartyData(participant: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '12345678')),
         customer: new InvoicePartyData(participant: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '87654321')),
-        lines: [new InvoiceLineData(id: 1)],
+        lines: [new InvoiceLineData(id: '1')],
         totals: new InvoiceTotalsData('1000.00', '250.00', '1250.00'),
     );
 
