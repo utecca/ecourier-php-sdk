@@ -18,16 +18,16 @@
             "latest_e2e_message_uuid": "msg_01abc",
             "latest_e2e_transmission_id": "trans_01def",
             "sender": {
-                "participant_id": "12345678",
-                "participant_identifier": "0184:12345678",
-                "participant_identifier_icd": "0184",
-                "participant_identifier_scheme": "DK:CVR"
+                "full_identifier": "0184:12345678",
+                "scheme": "DK:CVR",
+                "scheme_icd": "0184",
+                "identifier": "12345678"
             },
             "receiver": {
-                "participant_id": "87654321",
-                "participant_identifier": "0184:87654321",
-                "participant_identifier_icd": "0184",
-                "participant_identifier_scheme": "DK:CVR"
+                "full_identifier": "0184:87654321",
+                "scheme": "DK:CVR",
+                "scheme_icd": "0184",
+                "identifier": "87654321"
             },
             "ubl": {
                 "id": "INV-2024-001",

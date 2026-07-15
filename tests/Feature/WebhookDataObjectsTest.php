@@ -60,8 +60,8 @@ it('maps nested document webhook data', function () {
     expect($webhook->document->channel)->toBe(Channel::NemHandel);
     expect($webhook->document->status)->toBe(DocumentStatus::Delivered);
     expect($webhook->document->type)->toBe(DocumentType::Invoice);
-    expect($webhook->document->sender->participantId)->toBe('12345678');
-    expect($webhook->document->receiver->participantId)->toBe('87654321');
+    expect($webhook->document->sender->identifier)->toBe('12345678');
+    expect($webhook->document->receiver->identifier)->toBe('87654321');
     expect($webhook->document->ubl->id)->toBe('INV-2024-001');
 });
 
@@ -71,8 +71,8 @@ it('serializes document webhook data with wire keys', function () {
     expect($result['event_id'])->toBe('evt_01hxyz');
     expect($result['payload']['document']['dashboard_url'])->toBe('https://app.ecourier.test/documents/doc_01xyz');
     expect($result['payload']['document']['latest_e2e_message_uuid'])->toBe('msg_01abc');
-    expect($result['payload']['document']['sender']['participant_identifier_scheme'])->toBe('DK:CVR');
-    expect($result['payload']['document']['receiver']['participant_id'])->toBe('87654321');
+    expect($result['payload']['document']['sender']['scheme'])->toBe('DK:CVR');
+    expect($result['payload']['document']['receiver']['identifier'])->toBe('87654321');
     expect($result['payload']['document']['ubl']['profile_id'])->toBe('urn:www.nesubl.eu:profiles:profile5:ver2.0');
 });
 

@@ -216,8 +216,8 @@ $document->mode;             // Mode::Live
 $document->direction;        // Direction::Send
 $document->type;             // DocumentType::Invoice
 $document->submissionFormat; // SubmissionFormat::JSON
-$document->sender->scheme;   // IdentifierScheme::DK_CVR
-$document->recipient->id;    // '5790000123456'
+$document->sender->scheme;        // IdentifierScheme::DK_CVR
+$document->recipient->identifier; // '5790000123456'
 $document->company->name;    // 'Acme Danmark A/S'
 ```
 
@@ -597,12 +597,21 @@ All resources return typed DTOs with readonly properties.
 | `$direction` | `Direction` |
 | `$type` | `DocumentType` |
 | `$submissionFormat` | `?SubmissionFormat` |
-| `$sender` | `?ParticipantIdentifier` |
-| `$recipient` | `?ParticipantIdentifier` |
+| `$sender` | `?DocumentParticipantData` |
+| `$recipient` | `?DocumentParticipantData` |
 | `$latestE2eMessageUuid` | `?string` |
 | `$latestE2eTransmissionId` | `?string` |
 | `$company` | `?DocumentCompanyData` |
 | `$createdAt` | `?DateTimeImmutable` |
+
+### `DocumentParticipantData`
+
+| Property | Type |
+|---|---|
+| `$fullIdentifier` | `string` |
+| `$scheme` | `IdentifierScheme` |
+| `$schemeIcd` | `string` |
+| `$identifier` | `string` |
 
 ### `ParticipantData`
 
@@ -612,6 +621,7 @@ All resources return typed DTOs with readonly properties.
 | `$company` | `ParticipantCompanyData` |
 | `$mode` | `Mode` |
 | `$scheme` | `IdentifierScheme` |
+| `$schemeIcd` | `string` |
 | `$identifier` | `string` |
 | `$fullIdentifier` | `string` |
 | `$channels` | `Channel[]` |

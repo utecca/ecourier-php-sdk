@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Ecourier\Data\Webhook;
+namespace Ecourier\Data;
 
 use Ecourier\Enums\IdentifierScheme;
 
-class ParticipantData
+class DocumentParticipantData
 {
     public function __construct(
         public readonly string $fullIdentifier,

@@ -14,6 +14,7 @@ class CompanyParticipantData
         public readonly string $id,
         public readonly string $fullIdentifier,
         public readonly IdentifierScheme $scheme,
+        public readonly string $schemeIcd,
         public readonly string $identifier,
         public readonly array $channels,
     ) {}
@@ -24,6 +25,7 @@ class CompanyParticipantData
             id: $data['id'],
             fullIdentifier: $data['full_identifier'],
             scheme: IdentifierScheme::from($data['scheme']),
+            schemeIcd: $data['scheme_icd'],
             identifier: $data['identifier'],
             channels: array_map(fn(string $channel) => Channel::from($channel), $data['channels']),
         );
@@ -35,6 +37,7 @@ class CompanyParticipantData
             'id' => $this->id,
             'full_identifier' => $this->fullIdentifier,
             'scheme' => $this->scheme->value,
+            'scheme_icd' => $this->schemeIcd,
             'identifier' => $this->identifier,
             'channels' => array_map(fn(Channel $channel) => $channel->value, $this->channels),
         ];

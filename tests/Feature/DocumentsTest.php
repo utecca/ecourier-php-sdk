@@ -83,7 +83,7 @@ it('can get a document', function () {
     expect($document->type)->toBe(DocumentType::Invoice);
     expect($document->submissionFormat)->toBe(SubmissionFormat::JSON);
     expect($document->sender?->scheme)->toBe(IdentifierScheme::DK_CVR);
-    expect($document->recipient?->id)->toBe('5790000123456');
+    expect($document->recipient?->identifier)->toBe('5790000123456');
     expect($document->latestE2eMessageUuid)->toBe('ddc3b3ef-cbd4-4630-9d65-896b3e1abc61');
     expect($document->latestE2eTransmissionId)->toBe('trans_01def');
     expect($document->company?->name)->toBe('Acme Danmark A/S');

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Ecourier\Data;
 
 use DateTimeImmutable;
-use Ecourier\Data\Invoice\ParticipantIdentifier;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Direction;
 use Ecourier\Enums\DocumentStatus;
@@ -23,8 +22,8 @@ class DocumentData
         public readonly Direction $direction,
         public readonly DocumentType $type,
         public readonly ?SubmissionFormat $submissionFormat = null,
-        public readonly ?ParticipantIdentifier $sender = null,
-        public readonly ?ParticipantIdentifier $recipient = null,
+        public readonly ?DocumentParticipantData $sender = null,
+        public readonly ?DocumentParticipantData $recipient = null,
         public readonly ?string $latestE2eMessageUuid = null,
         public readonly ?string $latestE2eTransmissionId = null,
         public readonly ?DocumentCompanyData $company = null,
@@ -41,8 +40,8 @@ class DocumentData
             direction: Direction::from($data['direction']),
             type: DocumentType::from($data['type']),
             submissionFormat: isset($data['submission_format']) ? SubmissionFormat::from($data['submission_format']) : null,
-            sender: isset($data['sender']) ? ParticipantIdentifier::fromArray($data['sender']) : null,
-            recipient: isset($data['recipient']) ? ParticipantIdentifier::fromArray($data['recipient']) : null,
+            sender: isset($data['sender']) ? DocumentParticipantData::fromArray($data['sender']) : null,
+            recipient: isset($data['recipient']) ? DocumentParticipantData::fromArray($data['recipient']) : null,
             latestE2eMessageUuid: $data['latest_e2e_message_uuid'] ?? null,
             latestE2eTransmissionId: $data['latest_e2e_transmission_id'] ?? null,
             company: isset($data['company']) && $data['company'] !== null ? DocumentCompanyData::fromArray($data['company']) : null,

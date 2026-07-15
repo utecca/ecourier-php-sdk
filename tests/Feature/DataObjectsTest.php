@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Ecourier\Data\AddressData;
 use Ecourier\Data\CompanyData;
 use Ecourier\Data\DocumentData;
-use Ecourier\Data\Invoice\ParticipantIdentifier;
+use Ecourier\Data\DocumentParticipantData;
 use Ecourier\Data\ParticipantData;
 use Ecourier\Data\ParticipantLookupData;
 use Ecourier\Data\PartyData;
@@ -107,8 +107,8 @@ it('serializes DocumentData to array with all keys', function () {
         direction: Direction::Send,
         type: DocumentType::Invoice,
         submissionFormat: SubmissionFormat::JSON,
-        sender: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '12345678'),
-        recipient: new ParticipantIdentifier(IdentifierScheme::GLN, '5790000123456'),
+        sender: new DocumentParticipantData('0184:12345678', IdentifierScheme::DK_CVR, '0184', '12345678'),
+        recipient: new DocumentParticipantData('0088:5790000123456', IdentifierScheme::GLN, '0088', '5790000123456'),
         latestE2eMessageUuid: 'ddc3b3ef-cbd4-4630-9d65-896b3e1abc61',
         latestE2eTransmissionId: 'trans_01def',
         createdAt: new DateTimeImmutable('2024-06-01T10:00:00Z'),
@@ -124,7 +124,7 @@ it('serializes DocumentData to array with all keys', function () {
     expect($result['type'])->toBe('Invoice');
     expect($result['submission_format'])->toBe('JSON');
     expect($result['sender']['scheme'])->toBe('DK:CVR');
-    expect($result['recipient']['id'])->toBe('5790000123456');
+    expect($result['recipient']['identifier'])->toBe('5790000123456');
     expect($result['latest_e2e_message_uuid'])->toBe('ddc3b3ef-cbd4-4630-9d65-896b3e1abc61');
     expect($result['latest_e2e_transmission_id'])->toBe('trans_01def');
     expect($result['created_at'])->toBe('2024-06-01T10:00:00Z');
@@ -161,7 +161,7 @@ it('serializes DocumentData sender and recipient via ParticipantIdentifier toArr
     expect($result['sender'])->toBeArray();
     expect($result['sender']['scheme'])->toBe('DK:CVR');
     expect($result['recipient'])->toBeArray();
-    expect($result['recipient']['id'])->toBe('5790000123456');
+    expect($result['recipient']['identifier'])->toBe('5790000123456');
     expect($result['company']['name'])->toBe('Acme Danmark A/S');
 });
 

@@ -24,6 +24,7 @@
             "id": "0101knwp96k3ggvkra831yrd77ghi",
             "full_identifier": "0088:5790000435944",
             "scheme": "GLN",
+            "scheme_icd": "0088",
             "identifier": "5790000435944",
             "channels": [
                 "NemHandel"

@@ -7,12 +7,16 @@
     "type": "Invoice",
     "submission_format": "JSON",
     "sender": {
+        "full_identifier": "0184:12345678",
         "scheme": "DK:CVR",
-        "id": "12345678"
+        "scheme_icd": "0184",
+        "identifier": "12345678"
     },
     "recipient": {
+        "full_identifier": "0088:5790000123456",
         "scheme": "GLN",
-        "id": "5790000123456"
+        "scheme_icd": "0088",
+        "identifier": "5790000123456"
     },
     "latest_e2e_message_uuid": "ddc3b3ef-cbd4-4630-9d65-896b3e1abc61",
     "latest_e2e_transmission_id": "trans_01def",
