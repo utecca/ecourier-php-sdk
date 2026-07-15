@@ -740,6 +740,11 @@ vendor/bin/pint         # fix
 
 ---
 
+## Credits
+
+- [Bart Potmalnik](https://github.com/bpotmalnik) — original author
+- [All Contributors](https://github.com/utecca/ecourier-php-sdk/graphs/contributors)
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
