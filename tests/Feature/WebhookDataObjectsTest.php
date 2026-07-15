@@ -91,6 +91,33 @@ it('parses a document webhook with a not-yet-transmitted document', function () 
     expect($webhook->toArray()['payload']['document']['transmitted_at'])->toBeNull();
 });
 
+it('parses a document webhook with unextracted UBL data', function () {
+    $data = json_decode(webhookBody(), true, flags: JSON_THROW_ON_ERROR);
+    $data['payload']['document']['ubl'] = [
+        'id' => null,
+        'profile_id' => null,
+        'customization_id' => null,
+    ];
+
+    $webhook = DocumentWebhook::fromArray($data);
+
+    expect($webhook->document->ubl->id)->toBeNull();
+    expect($webhook->document->ubl->uuid)->toBeNull();
+    expect($webhook->document->ubl->profileId)->toBeNull();
+    expect($webhook->document->ubl->customizationId)->toBeNull();
+    expect($webhook->toArray()['payload']['document']['ubl']['id'])->toBeNull();
+});
+
+it('parses a document webhook with a UBL uuid', function () {
+    $data = json_decode(webhookBody(), true, flags: JSON_THROW_ON_ERROR);
+    $data['payload']['document']['ubl']['uuid'] = '660e8400-e29b-41d4-a716-446655440007';
+
+    $webhook = DocumentWebhook::fromArray($data);
+
+    expect($webhook->document->ubl->uuid)->toBe('660e8400-e29b-41d4-a716-446655440007');
+    expect($webhook->toArray()['payload']['document']['ubl']['uuid'])->toBe('660e8400-e29b-41d4-a716-446655440007');
+});
+
 it('throws on invalid webhook JSON', function () {
     WebhookEventFactory::fromRequestBody('{');
 })->throws(JsonException::class);
