@@ -96,6 +96,31 @@ enum IdentifierScheme: string
     case VA_VAT = 'VA:VAT';
 
     /**
+     * Get the scheme from its ISO 6523 ICD code, eg. 0184 for DK:CVR.
+     *
+     * @throws \ValueError When no scheme has the ICD code
+     */
+    public static function fromIcd(string $icd): self
+    {
+        return self::tryFromIcd($icd)
+            ?? throw new \ValueError(sprintf('"%s" is not a valid ICD code for enum %s', $icd, self::class));
+    }
+
+    /**
+     * Get the scheme from its ISO 6523 ICD code, or null when no scheme has the ICD code.
+     */
+    public static function tryFromIcd(string $icd): ?self
+    {
+        foreach (self::cases() as $scheme) {
+            if ($scheme->icd() === $icd) {
+                return $scheme;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * The ISO 6523 ICD code, which Peppol uses as the identifier schemeID, eg. 0184 for DK:CVR.
      *
      * @see https://docs.peppol.eu/poacc/billing/3.0/codelist/eas/

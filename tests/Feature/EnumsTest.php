@@ -23,6 +23,21 @@ it('returns the ICD code of an identifier scheme', function (IdentifierScheme $s
     [IdentifierScheme::DE_VAT, '9930'],
 ]);
 
+it('gets the identifier scheme from its ICD code', function () {
+    foreach (IdentifierScheme::cases() as $scheme) {
+        expect(IdentifierScheme::fromIcd($scheme->icd()))->toBe($scheme)
+            ->and(IdentifierScheme::tryFromIcd($scheme->icd()))->toBe($scheme);
+    }
+});
+
+it('returns null for an unknown ICD code', function () {
+    expect(IdentifierScheme::tryFromIcd('0000'))->toBeNull();
+});
+
+it('throws for an unknown ICD code', function () {
+    IdentifierScheme::fromIcd('0000');
+})->throws(ValueError::class, '"0000" is not a valid ICD code');
+
 it('only supports Danish identifiers and GLN on NemHandel', function () {
     expect(Channel::NemHandel->supportedSchemes())->toBe([
         IdentifierScheme::DK_CVR,
