@@ -11,6 +11,7 @@ use Ecourier\Enums\Channel;
 use Ecourier\Enums\Direction;
 use Ecourier\Enums\DocumentStatus;
 use Ecourier\Enums\IdentifierScheme;
+use Ecourier\Enums\Locale;
 use Ecourier\Enums\Sort;
 use Ecourier\Pagination\DocumentsPaginator;
 use Ecourier\Requests\Documents\GetDocumentsRequest;
@@ -84,14 +85,14 @@ class DocumentsResource extends BaseResource
         return $this->connector->send(new GetDocumentContentRequest($document));
     }
 
-    public function renderAsHtml(string $document): Response
+    public function renderAsHtml(string $document, ?Locale $locale = null): Response
     {
-        return $this->connector->send(new GetDocumentHtmlRequest($document));
+        return $this->connector->send(new GetDocumentHtmlRequest($document, $locale));
     }
 
-    public function renderAsPdf(string $document): Response
+    public function renderAsPdf(string $document, ?Locale $locale = null): Response
     {
-        return $this->connector->send(new GetDocumentPdfRequest($document));
+        return $this->connector->send(new GetDocumentPdfRequest($document, $locale));
     }
 
     public function markDelivered(string $document, bool $delivered = true): DocumentData

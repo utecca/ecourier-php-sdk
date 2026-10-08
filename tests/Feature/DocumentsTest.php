@@ -22,12 +22,15 @@ use Ecourier\Enums\Direction;
 use Ecourier\Enums\DocumentStatus;
 use Ecourier\Enums\DocumentType;
 use Ecourier\Enums\IdentifierScheme;
+use Ecourier\Enums\Locale;
 use Ecourier\Enums\Mode;
 use Ecourier\Enums\PaymentMeansCode;
 use Ecourier\Enums\Sort;
 use Ecourier\Enums\SubmissionFormat;
 use Ecourier\Enums\TaxCategoryCode;
 use Ecourier\Pagination\DocumentsPaginator;
+use Ecourier\Requests\Documents\GetDocumentHtmlRequest;
+use Ecourier\Requests\Documents\GetDocumentPdfRequest;
 use Ecourier\Requests\Documents\GetDocumentRequest;
 use Ecourier\Requests\Documents\GetDocumentsRequest;
 use Ecourier\Requests\Documents\MarkDocumentDeliveredRequest;
@@ -196,6 +199,37 @@ it('omits sort when not provided', function () {
     $request = new GetDocumentsRequest();
 
     expect($request->query()->all())->not()->toHaveKey('sort');
+});
+
+it('sends the locale as a query param when rendering', function () {
+    $html = new GetDocumentHtmlRequest('doc_01xyz', Locale::DA);
+    $pdf  = new GetDocumentPdfRequest('doc_01xyz', Locale::DA);
+
+    expect($html->query()->all())->toBe(['locale' => 'da']);
+    expect($pdf->query()->all())->toBe(['locale' => 'da']);
+});
+
+it('omits the locale when rendering without one', function () {
+    expect((new GetDocumentHtmlRequest('doc_01xyz'))->query()->all())->toBe([]);
+    expect((new GetDocumentPdfRequest('doc_01xyz'))->query()->all())->toBe([]);
+});
+
+it('can render a document as pdf in a locale', function () {
+    $mockClient = new MockClient([
+        GetDocumentPdfRequest::class => MockResponse::make(
+            body: '%PDF-1.4',
+            status: 200,
+            headers: ['Content-Type' => 'application/pdf'],
+        ),
+    ]);
+
+    $connector = new EcourierConnector(apiKey: 'pk_test_fake');
+    $connector->withMockClient($mockClient);
+
+    $pdf = $connector->documents()->renderAsPdf('doc_01xyz', Locale::DA)->body();
+
+    expect($pdf)->toBe('%PDF-1.4');
+    $mockClient->assertSent(fn (GetDocumentPdfRequest $request, $response) => $response->getPendingRequest()->query()->get('locale') === 'da');
 });
 
 // --- SendDocumentAsJsonRequest ---

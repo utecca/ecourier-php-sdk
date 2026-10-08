@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Requests\Documents;
 
+use Ecourier\Enums\Locale;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 
@@ -13,6 +14,7 @@ class GetDocumentPdfRequest extends Request
 
     public function __construct(
         private readonly string $document,
+        private readonly ?Locale $locale = null,
     ) {}
 
     public function resolveEndpoint(): string
@@ -25,5 +27,12 @@ class GetDocumentPdfRequest extends Request
         return [
             'Accept' => 'application/pdf',
         ];
+    }
+
+    protected function defaultQuery(): array
+    {
+        return array_filter([
+            'locale' => $this->locale?->value,
+        ]);
     }
 }
