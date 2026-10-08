@@ -246,6 +246,14 @@ $pdf  = $ecourier->documents()->renderAsPdf('doc_01xyz')->body();
 file_put_contents('invoice.pdf', $pdf);
 ```
 
+Labels are rendered in English by default. Pass a locale to render them in another language:
+
+```php
+use Ecourier\Enums\Locale;
+
+$pdf = $ecourier->documents()->renderAsPdf('doc_01xyz', Locale::DA)->body();
+```
+
 ### Mark a document as delivered
 
 For received documents, mark them as delivered once your application has finished processing them:
