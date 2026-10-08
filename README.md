@@ -532,6 +532,17 @@ All typed fields use PHP backed enums, giving you IDE autocomplete and preventin
 
 Enums serialize to their wire value automatically when used in requests. When the API returns an unrecognised value for an optional enum field, the SDK maps it to `null` rather than throwing.
 
+`IdentifierScheme::icd()` returns the ISO 6523 ICD code, which Peppol uses as the identifier `schemeID`. `Channel::supportedSchemes()` returns the identifier schemes the network can route to:
+
+```php
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\IdentifierScheme;
+
+IdentifierScheme::DK_CVR->icd(); // '0184'
+
+in_array(IdentifierScheme::NO_ORG, Channel::NemHandel->supportedSchemes(), true); // false
+```
+
 ---
 
 ## Testing & Mocking
