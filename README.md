@@ -155,7 +155,7 @@ $invoice = new InvoiceDocumentData(
         participant: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '87654321'),
     ),
     lines: [
-        new InvoiceLineData(id: '1'),
+        new InvoiceLineData(id: '1', name: 'Consulting'),
     ],
     totals: new InvoiceTotalsData(
         subtotalAmount: '1000.00',

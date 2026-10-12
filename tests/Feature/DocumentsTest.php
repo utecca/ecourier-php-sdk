@@ -52,7 +52,7 @@ function minimalInvoice(): InvoiceDocumentData
         customer: new InvoicePartyData(
             participant: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '87654321'),
         ),
-        lines: [new InvoiceLineData(id: '1')],
+        lines: [new InvoiceLineData(id: '1', name: 'Consulting')],
         totals: new InvoiceTotalsData(
             subtotalAmount: '1000.00',
             taxAmount: '250.00',
