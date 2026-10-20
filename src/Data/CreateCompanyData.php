@@ -11,7 +11,6 @@ class CreateCompanyData
         public readonly string $country,
         public readonly string $companyNo,
         public readonly CompanyAuthorisationSignerData $signer,
-        public readonly ?string $parentId = null,
     ) {}
 
     public function toArray(): array
@@ -22,10 +21,6 @@ class CreateCompanyData
             'company_no' => $this->companyNo,
             'signer' => $this->signer->toArray(),
         ];
-
-        if ($this->parentId !== null) {
-            $data['parent_id'] = $this->parentId;
-        }
 
         return $data;
     }

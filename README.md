@@ -636,8 +636,6 @@ All resources return typed DTOs with readonly properties.
 | `$companyNo` | `string` |
 | `$createdAt` | `DateTimeImmutable` |
 | `$updatedAt` | `DateTimeImmutable` |
-| `$parentId` | `?string` |
-| `$children` | `array` |
 | `$country` | `string` |
 | `$authorisation` | `?CompanyAuthorisationData` |
 | `$participants` | `CompanyParticipantData[]` |
@@ -650,7 +648,6 @@ All resources return typed DTOs with readonly properties.
 | `$country` | `string` | Yes |
 | `$companyNo` | `string` | Yes |
 | `$signer` | `CompanyAuthorisationSignerData` | Yes |
-| `$parentId` | `?string` | No |
 
 ### `DocumentData`
 
