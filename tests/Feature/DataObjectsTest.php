@@ -199,8 +199,6 @@ it('serializes CompanyData to array with all keys', function () {
         companyNo: '12345678',
         createdAt: new DateTimeImmutable('2026-04-11T12:34:56+00:00'),
         updatedAt: new DateTimeImmutable('2026-05-21T09:15:30+00:00'),
-        parentId: null,
-        children: ['0101knwp96k3ggvkra831yrd76def'],
         country: 'DK',
         authorisation: null,
         participants: [],
@@ -212,7 +210,6 @@ it('serializes CompanyData to array with all keys', function () {
     expect($result['name'])->toBe('Acme Danmark A/S');
     expect($result['mode'])->toBe('Live');
     expect($result['company_no'])->toBe('12345678');
-    expect($result['children'])->toHaveCount(1);
 });
 
 it('serializes CompanyData nested authorisation and participants', function () {
@@ -237,7 +234,6 @@ it('roundtrips CompanyData through fromArray and toArray', function () {
     expect($result['mode'])->toBe($fixture['mode']);
     expect($result['company_no'])->toBe($fixture['company_no']);
     expect($result['country'])->toBe($fixture['country']);
-    expect($result['children'])->toBe($fixture['children']);
 });
 
 // --- ParticipantLookupData ---

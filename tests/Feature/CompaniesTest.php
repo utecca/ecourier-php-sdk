@@ -145,7 +145,6 @@ it('serializes create company body from the api schema', function () {
         country: 'DK',
         companyNo: '12345678',
         signer: new CompanyAuthorisationSignerData('Ada', 'Lovelace', 'CEO'),
-        parentId: '0101knwp96k3ggvkra831yrd75abc',
     ));
 
     expect($request->body()->all())->toBe([
@@ -157,7 +156,6 @@ it('serializes create company body from the api schema', function () {
             'last_name' => 'Lovelace',
             'title' => 'CEO',
         ],
-        'parent_id' => '0101knwp96k3ggvkra831yrd75abc',
     ]);
 });
 
