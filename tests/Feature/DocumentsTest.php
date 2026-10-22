@@ -93,7 +93,25 @@ it('can get a document', function () {
     expect($document->dashboardUrl)->toBe('https://app.ecourier.io/live/acme-danmark/documents/01kmkdaf55vrrecfy70180tpr6');
     expect($document->transmittedAt?->format('Y-m-d\TH:i:s\Z'))->toBe('2024-06-01T10:05:00Z');
     expect($document->ubl?->id)->toBe('INV-2024-001');
+    expect($document->validation?->hasErrors())->toBeFalse();
+    expect($document->validation?->hasWarnings())->toBeTrue();
+    expect($document->validation?->warnings[0]->code)->toBe('W-INV181');
+    expect($document->validation?->warnings[0]->message)->toBe('Note should not be longer than 500 characters');
+    expect($document->validation?->warnings[0]->location)->toBe('/Invoice/cbc:Note');
 });
+
+it('rejects document types that cannot be sent as JSON', function () {
+    new InvoiceDocumentData(
+        type: DocumentType::ApplicationResponse,
+        id: minimalInvoice()->id,
+        issueDate: minimalInvoice()->issueDate,
+        currency: minimalInvoice()->currency,
+        supplier: minimalInvoice()->supplier,
+        customer: minimalInvoice()->customer,
+        lines: minimalInvoice()->lines,
+        totals: minimalInvoice()->totals,
+    );
+})->throws(InvalidArgumentException::class, 'Document type ApplicationResponse cannot be sent as JSON');
 
 // --- MarkDocumentDeliveredRequest ---
 

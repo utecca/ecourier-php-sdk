@@ -65,6 +65,8 @@ it('maps nested document webhook data', function () {
     expect($webhook->document->sender->identifier)->toBe('12345678');
     expect($webhook->document->recipient->identifier)->toBe('87654321');
     expect($webhook->document->ubl->id)->toBe('INV-2024-001');
+    expect($webhook->document->validation?->errors)->toBe([]);
+    expect($webhook->document->validation?->warnings)->toBe([]);
     expect($webhook->document->mode)->toBe(Mode::Test);
     expect($webhook->document->direction)->toBe(Direction::Send);
     expect($webhook->document->submissionFormat)->toBe(SubmissionFormat::XML);

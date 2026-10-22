@@ -9,6 +9,7 @@
     "authorisation": {
         "signed": false,
         "sign_url": "https://app.ecourier.io/end-user/authorise/01kmkdaf55vrrecfy70181tpr6",
+        "redirect_url": "https://example.com/onboarding/authorisation-complete",
         "signer": {
             "first_name": "Pernille",
             "last_name": "Jensen",

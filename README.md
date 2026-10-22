@@ -102,7 +102,13 @@ $company = $ecourier->companies()->create(new CreateCompanyData(
         lastName: 'Lovelace',
         title: 'CEO',
     ),
+    // Optional: send the signer here after they sign the authorisation agreement.
+    // Omit to show eCourier's default confirmation page.
+    redirectUrl: 'https://example.com/onboarding/authorisation-complete',
 ));
+
+$company->authorisation->signUrl;     // Send the signer here to sign
+$company->authorisation->redirectUrl; // 'https://example.com/onboarding/authorisation-complete'
 ```
 
 ### Update a company
@@ -219,6 +225,13 @@ $document->submissionFormat; // SubmissionFormat::JSON
 $document->sender->scheme;        // IdentifierScheme::DK_CVR
 $document->recipient->identifier; // '5790000123456'
 $document->company->name;    // 'Acme Danmark A/S'
+
+// Validation errors and warnings found for the document
+if ($document->validation?->hasErrors()) {
+    foreach ($document->validation->errors as $error) {
+        echo "{$error->code}: {$error->message} at {$error->location}";
+    }
+}
 ```
 
 ### List documents
@@ -648,6 +661,16 @@ All resources return typed DTOs with readonly properties.
 | `$country` | `string` | Yes |
 | `$companyNo` | `string` | Yes |
 | `$signer` | `CompanyAuthorisationSignerData` | Yes |
+| `$redirectUrl` | `?string` | No |
+
+### `CompanyAuthorisationData`
+
+| Property | Type |
+|---|---|
+| `$signed` | `bool` |
+| `$signUrl` | `?string` |
+| `$signer` | `CompanyAuthorisationSignerData` |
+| `$redirectUrl` | `?string` |
 
 ### `DocumentData`
 
@@ -671,6 +694,7 @@ Shared by document endpoints (`find`, `markDelivered`, list items) and the `docu
 | `$createdAt` | `?DateTimeImmutable` |
 | `$transmittedAt` | `?DateTimeImmutable` |
 | `$ubl` | `?DocumentUblData` |
+| `$validation` | `?DocumentValidationData` |
 
 ### `DocumentParticipantData`
 
@@ -689,6 +713,23 @@ Shared by document endpoints (`find`, `markDelivered`, list items) and the `docu
 | `$uuid` | `?string` |
 | `$profileId` | `?string` |
 | `$customizationId` | `?string` |
+
+### `DocumentValidationData`
+
+| Property / Method | Type |
+|---|---|
+| `$errors` | `DocumentValidationIssueData[]` |
+| `$warnings` | `DocumentValidationIssueData[]` |
+| `hasErrors()` | `bool` |
+| `hasWarnings()` | `bool` |
+
+### `DocumentValidationIssueData`
+
+| Property | Type |
+|---|---|
+| `$message` | `string` |
+| `$code` | `?string` |
+| `$location` | `?string` — an XPath for schematron rules, or e.g. `Line 3` for XML schema errors |
 
 ### `ParticipantData`
 
@@ -766,7 +807,7 @@ Extends `WebhookEvent`. Returned by `WebhookEventFactory` for all `Document.*` e
 
 | Property | Type | Required |
 |---|---|---|
-| `$type` | `DocumentType` | Yes |
+| `$type` | `DocumentType` (`Invoice` or `CreditNote`) | Yes |
 | `$id` | `string` | Yes |
 | `$issueDate` | `string` | Yes |
 | `$currency` | `Currency` | Yes |

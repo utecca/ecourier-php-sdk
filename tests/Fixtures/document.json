@@ -32,5 +32,15 @@
         "uuid": "660e8400-e29b-41d4-a716-446655440007",
         "profile_id": "urn:www.nesubl.eu:profiles:profile5:ver2.0",
         "customization_id": "OIOUBL-2.1"
+    },
+    "validation": {
+        "errors": [],
+        "warnings": [
+            {
+                "code": "W-INV181",
+                "message": "Note should not be longer than 500 characters",
+                "location": "/Invoice/cbc:Note"
+            }
+        ]
     }
 }

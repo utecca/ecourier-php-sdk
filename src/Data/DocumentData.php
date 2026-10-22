@@ -31,6 +31,7 @@ class DocumentData
         public readonly ?DateTimeImmutable $createdAt = null,
         public readonly ?DateTimeImmutable $transmittedAt = null,
         public readonly ?DocumentUblData $ubl = null,
+        public readonly ?DocumentValidationData $validation = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -52,6 +53,7 @@ class DocumentData
             createdAt: isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
             transmittedAt: isset($data['transmitted_at']) ? new DateTimeImmutable($data['transmitted_at']) : null,
             ubl: isset($data['ubl']) ? DocumentUblData::fromArray($data['ubl']) : null,
+            validation: isset($data['validation']) ? DocumentValidationData::fromArray($data['validation']) : null,
         );
     }
 
@@ -74,6 +76,7 @@ class DocumentData
             'created_at' => $this->createdAt?->format('Y-m-d\TH:i:s\Z'),
             'transmitted_at' => $this->transmittedAt?->format('Y-m-d\TH:i:s\Z'),
             'ubl' => $this->ubl?->toArray(),
+            'validation' => $this->validation?->toArray(),
         ];
     }
 }

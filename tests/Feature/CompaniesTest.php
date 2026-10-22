@@ -94,6 +94,7 @@ it('can get a company', function () {
     expect($company->country)->toBe('DK');
     expect($company->authorisation?->signed)->toBeFalse();
     expect($company->authorisation?->signer->firstName)->toBe('Pernille');
+    expect($company->authorisation?->redirectUrl)->toBe('https://example.com/onboarding/authorisation-complete');
     expect($company->participants)->toHaveCount(1);
     expect($company->participants[0]->identifier)->toBe('5790000435944');
 });
@@ -145,6 +146,7 @@ it('serializes create company body from the api schema', function () {
         country: 'DK',
         companyNo: '12345678',
         signer: new CompanyAuthorisationSignerData('Ada', 'Lovelace', 'CEO'),
+        redirectUrl: 'https://example.com/onboarding/authorisation-complete',
     ));
 
     expect($request->body()->all())->toBe([
@@ -156,7 +158,19 @@ it('serializes create company body from the api schema', function () {
             'last_name' => 'Lovelace',
             'title' => 'CEO',
         ],
+        'redirect_url' => 'https://example.com/onboarding/authorisation-complete',
     ]);
+});
+
+it('omits redirect url when not set', function () {
+    $request = new CreateCompanyRequest(new CreateCompanyData(
+        name: 'Acme Danmark A/S',
+        country: 'DK',
+        companyNo: '12345678',
+        signer: new CompanyAuthorisationSignerData('Ada', 'Lovelace', 'CEO'),
+    ));
+
+    expect($request->body()->all())->not->toHaveKey('redirect_url');
 });
 
 it('can update a company', function () {

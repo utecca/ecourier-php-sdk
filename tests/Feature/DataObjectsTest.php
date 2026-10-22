@@ -145,13 +145,14 @@ it('includes null values in DocumentData toArray', function () {
     expect($result)->toHaveKeys([
         'id', 'status', 'channel', 'mode', 'direction', 'type', 'submission_format',
         'sender', 'recipient', 'latest_e2e_message_uuid', 'latest_e2e_transmission_id', 'company',
-        'dashboard_url', 'created_at', 'transmitted_at', 'ubl',
+        'dashboard_url', 'created_at', 'transmitted_at', 'ubl', 'validation',
     ]);
     expect($result['mode'])->toBeNull();
     expect($result['sender'])->toBeNull();
     expect($result['company'])->toBeNull();
     expect($result['dashboard_url'])->toBeNull();
     expect($result['ubl'])->toBeNull();
+    expect($result['validation'])->toBeNull();
 });
 
 it('serializes DocumentData sender and recipient via ParticipantIdentifier toArray', function () {
@@ -187,6 +188,7 @@ it('roundtrips DocumentData through fromArray and toArray', function () {
     expect($result['created_at'])->toBe($fixture['created_at']);
     expect($result['transmitted_at'])->toBe($fixture['transmitted_at']);
     expect($result['ubl']['profile_id'])->toBe($fixture['ubl']['profile_id']);
+    expect($result['validation'])->toBe($fixture['validation']);
 });
 
 // --- CompanyData ---

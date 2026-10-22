@@ -10,6 +10,7 @@ class CompanyAuthorisationData
         public readonly bool $signed,
         public readonly ?string $signUrl,
         public readonly CompanyAuthorisationSignerData $signer,
+        public readonly ?string $redirectUrl = null,
     ) {}
 
     public static function fromArray(array $data): self
@@ -18,6 +19,7 @@ class CompanyAuthorisationData
             signed: $data['signed'],
             signUrl: $data['sign_url'],
             signer: CompanyAuthorisationSignerData::fromArray($data['signer']),
+            redirectUrl: $data['redirect_url'] ?? null,
         );
     }
 
@@ -26,6 +28,7 @@ class CompanyAuthorisationData
         return [
             'signed' => $this->signed,
             'sign_url' => $this->signUrl,
+            'redirect_url' => $this->redirectUrl,
             'signer' => $this->signer->toArray(),
         ];
     }
