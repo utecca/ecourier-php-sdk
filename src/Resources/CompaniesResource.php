@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Resources;
 
+use Ecourier\Data\CompanyAuthorisationSignerData;
 use Ecourier\Data\CompanyData;
 use Ecourier\Data\CreateCompanyData;
 use Ecourier\Enums\Channel;
@@ -12,6 +13,7 @@ use Ecourier\Requests\Companies\CreateCompanyRequest;
 use Ecourier\Requests\Companies\DeleteCompanyRequest;
 use Ecourier\Requests\Companies\GetCompaniesRequest;
 use Ecourier\Requests\Companies\GetCompanyRequest;
+use Ecourier\Requests\Companies\SubmitAuthorisationPdfRequest;
 use Ecourier\Requests\Companies\UpdateCompanyRequest;
 use Saloon\Http\BaseResource;
 use Saloon\Http\Response;
@@ -54,6 +56,18 @@ class CompaniesResource extends BaseResource
     public function update(string $company, string $name): CompanyData
     {
         return $this->connector->send(new UpdateCompanyRequest($company, $name))->dto();
+    }
+
+    /**
+     * Upload a signed authorisation PDF for the company. Only available to teams with a special agreement.
+     */
+    public function submitAuthorisationPdf(
+        string $company,
+        string $pdf,
+        CompanyAuthorisationSignerData $signer,
+        string $filename = 'authorisation.pdf',
+    ): CompanyData {
+        return $this->connector->send(new SubmitAuthorisationPdfRequest($company, $pdf, $signer, $filename))->dto();
     }
 
     public function delete(string $company): Response

@@ -28,5 +28,11 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
+      - name: Check code style
+        run: vendor/bin/pint --test
+
+      - name: Run static analysis
+        run: vendor/bin/phpstan analyse --no-progress
+
       - name: Run tests
         run: vendor/bin/pest

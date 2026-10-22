@@ -7,12 +7,18 @@ use Ecourier\Data\Invoice\InvoiceLineData;
 use Ecourier\Data\Invoice\InvoicePartyData;
 use Ecourier\Data\Invoice\InvoiceTotalsData;
 use Ecourier\Data\Invoice\ParticipantIdentifier;
+use Ecourier\Data\Invoice\SimplifiedAddressData;
 use Ecourier\EcourierConnector;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Currency;
 use Ecourier\Enums\DocumentType;
 use Ecourier\Enums\IdentifierScheme;
 use Ecourier\Exceptions\AuthenticationException;
+use Ecourier\Exceptions\BadRequestException;
+use Ecourier\Exceptions\EcourierException;
+use Ecourier\Exceptions\FailedDependencyException;
+use Ecourier\Exceptions\ForbiddenException;
+use Ecourier\Exceptions\GoneException;
 use Ecourier\Exceptions\NotFoundException;
 use Ecourier\Exceptions\ValidationException;
 use Ecourier\Requests\Companies\GetCompanyRequest;
@@ -70,8 +76,16 @@ it('throws validation exception on 422 with errors', function () {
         id: 'INV-001',
         issueDate: '2024-06-01',
         currency: Currency::DKK,
-        supplier: new InvoicePartyData(participant: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '12345678')),
-        customer: new InvoicePartyData(participant: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '87654321')),
+        supplier: new InvoicePartyData(
+            participant: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '12345678'),
+            name: 'Acme Danmark A/S',
+            simplifiedAddress: new SimplifiedAddressData('Vestergade 1', 'Copenhagen', '1456', 'DK'),
+        ),
+        customer: new InvoicePartyData(
+            participant: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '87654321'),
+            name: 'Customer ApS',
+            simplifiedAddress: new SimplifiedAddressData('Nørregade 2', 'Aarhus', '8000', 'DK'),
+        ),
         lines: [new InvoiceLineData(id: '1', name: 'Consulting')],
         totals: new InvoiceTotalsData('1000.00', '250.00', '1250.00'),
     );
@@ -84,3 +98,49 @@ it('throws validation exception on 422 with errors', function () {
         throw $e;
     }
 })->throws(ValidationException::class);
+
+it('maps error statuses to exceptions', function (int $status, string $exception) {
+    $mockClient = new MockClient([
+        GetCompanyRequest::class => MockResponse::make(
+            body: json_encode(['message' => 'Something went wrong.']),
+            status: $status,
+            headers: ['Content-Type' => 'application/json'],
+        ),
+    ]);
+
+    $connector = new EcourierConnector(apiKey: 'pk_test_fake');
+    $connector->withMockClient($mockClient);
+
+    try {
+        $connector->companies()->get('comp_01abc');
+    } catch (EcourierException $e) {
+        expect($e)->toBeInstanceOf($exception);
+        expect($e->getMessage())->toBe('Something went wrong.');
+        expect($e->getCode())->toBe($status);
+
+        return;
+    }
+
+    test()->fail('Expected an exception.');
+})->with([
+    [400, BadRequestException::class],
+    [403, ForbiddenException::class],
+    [410, GoneException::class],
+    [424, FailedDependencyException::class],
+    [500, EcourierException::class],
+]);
+
+it('throws an ecourier exception for non-json error bodies', function () {
+    $mockClient = new MockClient([
+        GetCompanyRequest::class => MockResponse::make(
+            body: '<html><body>502 Bad Gateway</body></html>',
+            status: 502,
+            headers: ['Content-Type' => 'text/html'],
+        ),
+    ]);
+
+    $connector = new EcourierConnector(apiKey: 'pk_test_fake');
+    $connector->withMockClient($mockClient);
+
+    $connector->companies()->get('comp_01abc');
+})->throws(EcourierException::class, 'Request failed with status 502.');

@@ -48,7 +48,7 @@ class DocumentData
             recipient: isset($data['recipient']) ? DocumentParticipantData::fromArray($data['recipient']) : null,
             latestE2eMessageUuid: $data['latest_e2e_message_uuid'] ?? null,
             latestE2eTransmissionId: $data['latest_e2e_transmission_id'] ?? null,
-            company: isset($data['company']) && $data['company'] !== null ? DocumentCompanyData::fromArray($data['company']) : null,
+            company: isset($data['company']) ? DocumentCompanyData::fromArray($data['company']) : null,
             dashboardUrl: $data['dashboard_url'] ?? null,
             createdAt: isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
             transmittedAt: isset($data['transmitted_at']) ? new DateTimeImmutable($data['transmitted_at']) : null,

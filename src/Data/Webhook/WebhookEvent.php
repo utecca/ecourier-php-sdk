@@ -17,7 +17,7 @@ abstract class WebhookEvent
         public readonly int $version,
         public readonly string $teamId,
         public readonly Mode $mode,
-        public readonly string $companyId,
+        public readonly ?string $companyId,
     ) {}
 
     abstract public static function fromArray(array $data): static;

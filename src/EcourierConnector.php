@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Ecourier;
 
 use Ecourier\Exceptions\AuthenticationException;
+use Ecourier\Exceptions\BadRequestException;
 use Ecourier\Exceptions\EcourierException;
+use Ecourier\Exceptions\FailedDependencyException;
+use Ecourier\Exceptions\ForbiddenException;
+use Ecourier\Exceptions\GoneException;
 use Ecourier\Exceptions\NotFoundException;
 use Ecourier\Exceptions\ValidationException;
 use Ecourier\Resources\CompaniesResource;
@@ -43,7 +47,6 @@ class EcourierConnector extends Connector
     protected function defaultHeaders(): array
     {
         return [
-            'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ];
     }
@@ -56,9 +59,13 @@ class EcourierConnector extends Connector
             }
 
             throw match ($response->status()) {
+                400 => BadRequestException::fromResponse($response),
                 401 => AuthenticationException::fromResponse($response),
+                403 => ForbiddenException::fromResponse($response),
                 404 => NotFoundException::fromResponse($response),
+                410 => GoneException::fromResponse($response),
                 422 => ValidationException::fromResponse($response),
+                424 => FailedDependencyException::fromResponse($response),
                 default => EcourierException::fromResponse($response),
             };
         });
