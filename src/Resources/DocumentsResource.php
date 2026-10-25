@@ -12,7 +12,6 @@ use Ecourier\Enums\Direction;
 use Ecourier\Enums\DocumentStatus;
 use Ecourier\Enums\IdentifierScheme;
 use Ecourier\Enums\Locale;
-use Ecourier\Enums\Sort;
 use Ecourier\Pagination\DocumentsPaginator;
 use Ecourier\Requests\Documents\GetDocumentsRequest;
 use Ecourier\Requests\Documents\GetDocumentRequest;
@@ -32,7 +31,6 @@ class DocumentsResource extends BaseResource
         Channel|array|null $channel = null,
         string|array|null $companyId = null,
         Direction|array|null $direction = null,
-        ?Sort $sort = null,
         int $perPage = 10,
     ): DocumentsPaginator {
         $request = new GetDocumentsRequest(
@@ -40,7 +38,6 @@ class DocumentsResource extends BaseResource
             channel: $channel,
             companyId: $companyId,
             direction: $direction,
-            sort: $sort,
             perPage: $perPage,
         );
 

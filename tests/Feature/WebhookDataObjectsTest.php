@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Ecourier\Data\Webhook\DocumentWebhook;
 use Ecourier\Data\Webhook\WebhookEventFactory;
+use Ecourier\Data\Webhook\WebhookSignature;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Direction;
 use Ecourier\Enums\DocumentStatus;
@@ -65,6 +66,8 @@ it('maps nested document webhook data', function () {
     expect($webhook->document->sender->identifier)->toBe('12345678');
     expect($webhook->document->recipient->identifier)->toBe('87654321');
     expect($webhook->document->ubl->id)->toBe('INV-2024-001');
+    expect($webhook->document->validation?->errors)->toBe([]);
+    expect($webhook->document->validation?->warnings)->toBe([]);
     expect($webhook->document->mode)->toBe(Mode::Test);
     expect($webhook->document->direction)->toBe(Direction::Send);
     expect($webhook->document->submissionFormat)->toBe(SubmissionFormat::XML);
@@ -131,3 +134,30 @@ it('throws on invalid webhook JSON', function () {
 it('throws on unknown webhook events', function () {
     WebhookEventFactory::fromRequestBody(webhookBody('Document.Unknown'));
 })->throws(InvalidArgumentException::class);
+
+it('accepts a null company id for deleted companies', function () {
+    $data = json_decode(webhookBody(), true);
+    $data['company_id'] = null;
+
+    $webhook = DocumentWebhook::fromArray($data);
+
+    expect($webhook->companyId)->toBeNull();
+    expect($webhook->toArray()['company_id'])->toBeNull();
+});
+
+it('verifies a valid webhook signature', function () {
+    $body = webhookBody();
+    $signature = hash_hmac('sha256', $body, 'whsec_test');
+
+    expect(WebhookSignature::verify($body, $signature, 'whsec_test'))->toBeTrue();
+});
+
+it('rejects an invalid webhook signature', function (?string $signature, string $secret) {
+    expect(WebhookSignature::verify(webhookBody(), $signature, $secret))->toBeFalse();
+})->with([
+    'wrong secret' => [fn() => hash_hmac('sha256', webhookBody(), 'whsec_other'), 'whsec_test'],
+    'tampered body' => [fn() => hash_hmac('sha256', webhookBody() . ' ', 'whsec_test'), 'whsec_test'],
+    'missing header' => [null, 'whsec_test'],
+    'empty header' => ['', 'whsec_test'],
+    'empty secret' => [fn() => hash_hmac('sha256', webhookBody(), ''), ''],
+]);

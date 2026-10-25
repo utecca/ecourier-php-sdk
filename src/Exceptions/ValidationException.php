@@ -10,9 +10,9 @@ class ValidationException extends EcourierException
 {
     private readonly array $errors;
 
-    public function __construct(string $message, Response $response, array $errors = [])
+    public function __construct(string $message, Response $response, int $code = 422, array $errors = [])
     {
-        parent::__construct($message, $response, 422);
+        parent::__construct($message, $response, $code);
         $this->errors = $errors;
     }
 
@@ -23,10 +23,10 @@ class ValidationException extends EcourierException
 
     public static function fromResponse(Response $response): static
     {
-        $body = $response->json();
+        $body = static::decodeBody($response);
         $message = $body['message'] ?? 'Validation failed.';
         $errors = $body['errors'] ?? [];
 
-        return new static($message, $response, $errors);
+        return new static($message, $response, $response->status(), $errors);
     }
 }

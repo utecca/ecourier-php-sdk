@@ -18,16 +18,17 @@
             "updated_at": "2026-05-21T09:15:30+00:00"
         }
     ],
-    "links": {
-        "first": "https://api.ecourier.io/v1/participants?page=1",
-        "last": "https://api.ecourier.io/v1/participants?page=1",
-        "prev": null,
-        "next": null
-    },
     "meta": {
         "current_page": 1,
+        "first_page_url": "https://api.ecourier.io/v1/participants?page=1",
+        "from": 1,
         "last_page": 1,
+        "last_page_url": "https://api.ecourier.io/v1/participants?page=1",
+        "next_page_url": null,
+        "path": "https://api.ecourier.io/v1/participants",
         "per_page": 25,
+        "prev_page_url": null,
+        "to": 1,
         "total": 1
     }
 }

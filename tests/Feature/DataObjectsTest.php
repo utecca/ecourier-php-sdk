@@ -145,13 +145,14 @@ it('includes null values in DocumentData toArray', function () {
     expect($result)->toHaveKeys([
         'id', 'status', 'channel', 'mode', 'direction', 'type', 'submission_format',
         'sender', 'recipient', 'latest_e2e_message_uuid', 'latest_e2e_transmission_id', 'company',
-        'dashboard_url', 'created_at', 'transmitted_at', 'ubl',
+        'dashboard_url', 'created_at', 'transmitted_at', 'ubl', 'validation',
     ]);
     expect($result['mode'])->toBeNull();
     expect($result['sender'])->toBeNull();
     expect($result['company'])->toBeNull();
     expect($result['dashboard_url'])->toBeNull();
     expect($result['ubl'])->toBeNull();
+    expect($result['validation'])->toBeNull();
 });
 
 it('serializes DocumentData sender and recipient via ParticipantIdentifier toArray', function () {
@@ -187,6 +188,7 @@ it('roundtrips DocumentData through fromArray and toArray', function () {
     expect($result['created_at'])->toBe($fixture['created_at']);
     expect($result['transmitted_at'])->toBe($fixture['transmitted_at']);
     expect($result['ubl']['profile_id'])->toBe($fixture['ubl']['profile_id']);
+    expect($result['validation'])->toBe($fixture['validation']);
 });
 
 // --- CompanyData ---
@@ -199,8 +201,6 @@ it('serializes CompanyData to array with all keys', function () {
         companyNo: '12345678',
         createdAt: new DateTimeImmutable('2026-04-11T12:34:56+00:00'),
         updatedAt: new DateTimeImmutable('2026-05-21T09:15:30+00:00'),
-        parentId: null,
-        children: ['0101knwp96k3ggvkra831yrd76def'],
         country: 'DK',
         authorisation: null,
         participants: [],
@@ -212,7 +212,6 @@ it('serializes CompanyData to array with all keys', function () {
     expect($result['name'])->toBe('Acme Danmark A/S');
     expect($result['mode'])->toBe('Live');
     expect($result['company_no'])->toBe('12345678');
-    expect($result['children'])->toHaveCount(1);
 });
 
 it('serializes CompanyData nested authorisation and participants', function () {
@@ -237,7 +236,6 @@ it('roundtrips CompanyData through fromArray and toArray', function () {
     expect($result['mode'])->toBe($fixture['mode']);
     expect($result['company_no'])->toBe($fixture['company_no']);
     expect($result['country'])->toBe($fixture['country']);
-    expect($result['children'])->toBe($fixture['children']);
 });
 
 // --- ParticipantLookupData ---

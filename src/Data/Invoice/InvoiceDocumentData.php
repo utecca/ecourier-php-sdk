@@ -6,6 +6,7 @@ namespace Ecourier\Data\Invoice;
 
 use Ecourier\Enums\Currency;
 use Ecourier\Enums\DocumentType;
+use InvalidArgumentException;
 
 class InvoiceDocumentData
 {
@@ -23,7 +24,11 @@ class InvoiceDocumentData
         public readonly ?string $dueDate = null,
         public readonly ?string $orderReference = null,
         public readonly ?InvoicePaymentData $payment = null,
-    ) {}
+    ) {
+        if (! in_array($type, [DocumentType::Invoice, DocumentType::CreditNote], true)) {
+            throw new InvalidArgumentException("Document type {$type->value} cannot be sent as JSON. Use Invoice or CreditNote.");
+        }
+    }
 
     public function toArray(): array
     {

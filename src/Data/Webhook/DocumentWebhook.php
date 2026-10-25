@@ -18,7 +18,7 @@ final class DocumentWebhook extends WebhookEvent
         int $version,
         string $teamId,
         Mode $mode,
-        string $companyId,
+        ?string $companyId,
         public readonly DocumentData $document,
     ) {
         parent::__construct($eventId, $event, $occurredAt, $version, $teamId, $mode, $companyId);
@@ -33,7 +33,7 @@ final class DocumentWebhook extends WebhookEvent
             version: (int) $data['version'],
             teamId: $data['team_id'],
             mode: Mode::from($data['mode']),
-            companyId: $data['company_id'],
+            companyId: $data['company_id'] ?? null,
             document: DocumentData::fromArray($data['payload']['document']),
         );
     }

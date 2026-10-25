@@ -8,14 +8,12 @@ class SendDocumentData
 {
     public function __construct(
         public readonly string $id,
-        public readonly ?string $e2eMessageUuid = null,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
             id: $data['id'],
-            e2eMessageUuid: $data['e2e_message_uuid'] ?? null,
         );
     }
 
@@ -23,7 +21,6 @@ class SendDocumentData
     {
         return [
             'id' => $this->id,
-            'e2e_message_uuid' => $this->e2eMessageUuid,
         ];
     }
 }
