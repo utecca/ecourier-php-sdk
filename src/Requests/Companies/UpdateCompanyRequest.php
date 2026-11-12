@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Ecourier\Requests\Companies;
 
-use Ecourier\Data\CompanyData;
+use Ecourier\Data\Requests\UpdateCompanyData;
+use Ecourier\Data\Responses\CompanyData;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -19,7 +20,7 @@ class UpdateCompanyRequest extends Request implements HasBody
 
     public function __construct(
         private readonly string $company,
-        private readonly string $name,
+        private readonly UpdateCompanyData $data,
     ) {}
 
     public function resolveEndpoint(): string
@@ -29,7 +30,7 @@ class UpdateCompanyRequest extends Request implements HasBody
 
     protected function defaultBody(): array
     {
-        return ['name' => $this->name];
+        return ['name' => $this->data->name];
     }
 
     public function createDtoFromResponse(Response $response): CompanyData

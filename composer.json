@@ -5,6 +5,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "composer-runtime-api": "^2.0",
         "saloonphp/saloon": "^4.0",
         "saloonphp/pagination-plugin": "^2.0"
     },

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Requests\Documents;
 
-use Ecourier\Data\SendDocumentData;
+use Ecourier\Data\Responses\SendDocumentData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
 use Saloon\Contracts\Body\HasBody;

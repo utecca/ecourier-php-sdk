@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Ecourier\Resources;
 
-use Ecourier\Data\CompanyAuthorisationSignerData;
-use Ecourier\Data\CompanyData;
-use Ecourier\Data\CreateCompanyData;
+use Ecourier\Data\Responses\CompanyData;
+use Ecourier\Data\Requests\CreateCompanyData;
+use Ecourier\Data\Requests\SubmitAuthorisationPdfData;
+use Ecourier\Data\Requests\UpdateCompanyData;
 use Ecourier\Enums\Channel;
 use Ecourier\Pagination\CompaniesPaginator;
 use Ecourier\Requests\Companies\CreateCompanyRequest;
@@ -53,21 +54,17 @@ class CompaniesResource extends BaseResource
         return $this->connector->send(new CreateCompanyRequest($company))->dto();
     }
 
-    public function update(string $company, string $name): CompanyData
+    public function update(string $company, UpdateCompanyData $data): CompanyData
     {
-        return $this->connector->send(new UpdateCompanyRequest($company, $name))->dto();
+        return $this->connector->send(new UpdateCompanyRequest($company, $data))->dto();
     }
 
     /**
-     * Upload a signed authorisation PDF for the company. Only available to teams with a special agreement.
+     * Upload a signed authorisation PDF for the company. Only available to teams with a Custom signing flow.
      */
-    public function submitAuthorisationPdf(
-        string $company,
-        string $pdf,
-        CompanyAuthorisationSignerData $signer,
-        string $filename = 'authorisation.pdf',
-    ): CompanyData {
-        return $this->connector->send(new SubmitAuthorisationPdfRequest($company, $pdf, $signer, $filename))->dto();
+    public function submitAuthorisationPdf(string $company, SubmitAuthorisationPdfData $data): CompanyData
+    {
+        return $this->connector->send(new SubmitAuthorisationPdfRequest($company, $data))->dto();
     }
 
     public function delete(string $company): Response

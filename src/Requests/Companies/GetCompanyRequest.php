@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Requests\Companies;
 
-use Ecourier\Data\CompanyData;
+use Ecourier\Data\Responses\CompanyData;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Ecourier\Data\ParticipantLookupData;
+use Ecourier\Data\Responses\ParticipantLookupData;
 use Ecourier\EcourierConnector;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;

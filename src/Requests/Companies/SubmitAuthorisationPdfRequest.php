@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Ecourier\Requests\Companies;
 
-use Ecourier\Data\CompanyAuthorisationSignerData;
-use Ecourier\Data\CompanyData;
+use Ecourier\Data\Requests\SubmitAuthorisationPdfData;
+use Ecourier\Data\Responses\CompanyData;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Data\MultipartValue;
 use Saloon\Enums\Method;
@@ -21,9 +21,7 @@ class SubmitAuthorisationPdfRequest extends Request implements HasBody
 
     public function __construct(
         private readonly string $company,
-        private readonly string $pdf,
-        private readonly CompanyAuthorisationSignerData $signer,
-        private readonly string $filename = 'authorisation.pdf',
+        private readonly SubmitAuthorisationPdfData $data,
     ) {}
 
     public function resolveEndpoint(): string
@@ -34,10 +32,10 @@ class SubmitAuthorisationPdfRequest extends Request implements HasBody
     protected function defaultBody(): array
     {
         return [
-            new MultipartValue('pdf', $this->pdf, $this->filename, ['Content-Type' => 'application/pdf']),
-            new MultipartValue('signer[first_name]', $this->signer->firstName),
-            new MultipartValue('signer[last_name]', $this->signer->lastName),
-            new MultipartValue('signer[title]', $this->signer->title),
+            new MultipartValue('pdf', $this->data->pdf, 'authorisation.pdf', ['Content-Type' => 'application/pdf']),
+            new MultipartValue('signer[first_name]', $this->data->signer->firstName),
+            new MultipartValue('signer[last_name]', $this->data->signer->lastName),
+            new MultipartValue('signer[title]', $this->data->signer->title),
         ];
     }
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Ecourier\Requests\Documents;
 
-use Ecourier\Data\Invoice\InvoiceDocumentData;
-use Ecourier\Data\SendDocumentData;
+use Ecourier\Data\Requests\Invoice\InvoiceDocumentData;
+use Ecourier\Data\Responses\SendDocumentData;
 use Ecourier\Enums\Channel;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;

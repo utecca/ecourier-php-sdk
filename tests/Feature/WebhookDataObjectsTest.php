@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Ecourier\Data\Webhook\DocumentWebhook;
-use Ecourier\Data\Webhook\WebhookEventFactory;
-use Ecourier\Data\Webhook\WebhookSignature;
+use Ecourier\Data\Responses\Webhook\DocumentWebhook;
+use Ecourier\Data\Responses\Webhook\WebhookEventFactory;
+use Ecourier\Data\Responses\Webhook\WebhookSignature;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Direction;
 use Ecourier\Enums\DocumentStatus;
@@ -161,3 +161,22 @@ it('rejects an invalid webhook signature', function (?string $signature, string 
     'empty header' => ['', 'whsec_test'],
     'empty secret' => [fn() => hash_hmac('sha256', webhookBody(), ''), ''],
 ]);
+
+it('verifies the current request from an explicitly passed body and signature', function () {
+    $body = webhookBody();
+    $signature = hash_hmac('sha256', $body, 'whsec_test');
+
+    expect(WebhookSignature::verifyCurrentRequest('whsec_test', $body, $signature))->toBeTrue();
+    expect(WebhookSignature::verifyCurrentRequest('whsec_other', $body, $signature))->toBeFalse();
+});
+
+it('falls back to the Signature header in $_SERVER when none is passed', function () {
+    $body = webhookBody();
+    $_SERVER['HTTP_SIGNATURE'] = hash_hmac('sha256', $body, 'whsec_test');
+
+    try {
+        expect(WebhookSignature::verifyCurrentRequest('whsec_test', $body))->toBeTrue();
+    } finally {
+        unset($_SERVER['HTTP_SIGNATURE']);
+    }
+});

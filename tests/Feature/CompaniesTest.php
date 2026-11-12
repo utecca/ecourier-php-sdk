@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-use Ecourier\Data\CompanyData;
-use Ecourier\Data\CompanyListItemData;
-use Ecourier\Data\CompanyAuthorisationSignerData;
-use Ecourier\Data\CreateCompanyData;
+use Ecourier\Data\Responses\CompanyData;
+use Ecourier\Data\Responses\CompanyListItemData;
+use Ecourier\Data\Responses\CompanyAuthorisationSignerData;
+use Ecourier\Data\Requests\CreateCompanyData;
+use Ecourier\Data\Requests\SubmitAuthorisationPdfData;
+use Ecourier\Data\Requests\UpdateCompanyData;
 use Ecourier\EcourierConnector;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Mode;
@@ -202,8 +204,10 @@ it('can submit a signed authorisation pdf', function () {
 
     $company = $connector->companies()->submitAuthorisationPdf(
         company: '0101knwp96k3ggvkra831yrd74zh',
-        pdf: '%PDF-1.4',
-        signer: new CompanyAuthorisationSignerData('Ada', 'Lovelace', 'CEO'),
+        data: new SubmitAuthorisationPdfData(
+            pdf: '%PDF-1.4',
+            signer: new CompanyAuthorisationSignerData('Ada', 'Lovelace', 'CEO'),
+        ),
     );
 
     expect($company)->toBeInstanceOf(CompanyData::class);
@@ -218,8 +222,10 @@ it('can submit a signed authorisation pdf', function () {
 it('serializes the authorisation pdf as multipart fields', function () {
     $request = new SubmitAuthorisationPdfRequest(
         company: '0101knwp96k3ggvkra831yrd74zh',
-        pdf: '%PDF-1.4',
-        signer: new CompanyAuthorisationSignerData('Ada', 'Lovelace', 'CEO'),
+        data: new SubmitAuthorisationPdfData(
+            pdf: '%PDF-1.4',
+            signer: new CompanyAuthorisationSignerData('Ada', 'Lovelace', 'CEO'),
+        ),
     );
 
     $fields = [];
@@ -247,14 +253,17 @@ it('can update a company', function () {
     $connector = new EcourierConnector(apiKey: 'pk_test_fake');
     $connector->withMockClient($mockClient);
 
-    $company = $connector->companies()->update('0101knwp96k3ggvkra831yrd74zh', 'Acme Danmark A/S');
+    $company = $connector->companies()->update(
+        '0101knwp96k3ggvkra831yrd74zh',
+        new UpdateCompanyData('Acme Danmark A/S'),
+    );
 
     expect($company)->toBeInstanceOf(CompanyData::class);
     $mockClient->assertSent(UpdateCompanyRequest::class);
 });
 
 it('serializes update company body from the api schema', function () {
-    $request = new UpdateCompanyRequest('0101knwp96k3ggvkra831yrd74zh', 'Acme Danmark A/S');
+    $request = new UpdateCompanyRequest('0101knwp96k3ggvkra831yrd74zh', new UpdateCompanyData('Acme Danmark A/S'));
 
     expect($request->resolveEndpoint())->toBe('/companies/0101knwp96k3ggvkra831yrd74zh');
     expect($request->body()->all())->toBe(['name' => 'Acme Danmark A/S']);

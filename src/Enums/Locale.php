@@ -9,6 +9,9 @@ namespace Ecourier\Enums;
  */
 enum Locale: string
 {
-    case EN = 'en';
-    case DA = 'da';
+    case DA = 'da'; // Danish
+    case DE = 'de'; // German
+    case EN = 'en'; // English
+    case NB = 'nb'; // Norwegian Bokmål
+    case SV = 'sv'; // Swedish
 }

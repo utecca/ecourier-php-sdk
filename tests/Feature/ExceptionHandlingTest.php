@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-use Ecourier\Data\Invoice\InvoiceDocumentData;
-use Ecourier\Data\Invoice\InvoiceLineData;
-use Ecourier\Data\Invoice\InvoicePartyData;
-use Ecourier\Data\Invoice\InvoiceTotalsData;
-use Ecourier\Data\Invoice\ParticipantIdentifier;
-use Ecourier\Data\Invoice\SimplifiedAddressData;
+use Ecourier\Data\Requests\Invoice\InvoiceDocumentData;
+use Ecourier\Data\Requests\Invoice\InvoiceLineData;
+use Ecourier\Data\Requests\Invoice\InvoicePartyData;
+use Ecourier\Data\Requests\Invoice\InvoiceTotalsData;
+use Ecourier\Data\Requests\Invoice\ParticipantIdentifier;
+use Ecourier\Data\Requests\Invoice\SimplifiedAddressData;
 use Ecourier\EcourierConnector;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Currency;
-use Ecourier\Enums\DocumentType;
+use Ecourier\Enums\InvoiceDocumentType;
 use Ecourier\Enums\IdentifierScheme;
 use Ecourier\Exceptions\AuthenticationException;
 use Ecourier\Exceptions\BadRequestException;
@@ -20,6 +20,7 @@ use Ecourier\Exceptions\FailedDependencyException;
 use Ecourier\Exceptions\ForbiddenException;
 use Ecourier\Exceptions\GoneException;
 use Ecourier\Exceptions\NotFoundException;
+use Ecourier\Exceptions\PaymentRequiredException;
 use Ecourier\Exceptions\ValidationException;
 use Ecourier\Requests\Companies\GetCompanyRequest;
 use Ecourier\Requests\Documents\SendDocumentAsJsonRequest;
@@ -72,7 +73,7 @@ it('throws validation exception on 422 with errors', function () {
     $connector->withMockClient($mockClient);
 
     $invoice = new InvoiceDocumentData(
-        type: DocumentType::Invoice,
+        type: InvoiceDocumentType::Invoice,
         id: 'INV-001',
         issueDate: '2024-06-01',
         currency: Currency::DKK,
@@ -86,7 +87,7 @@ it('throws validation exception on 422 with errors', function () {
             name: 'Customer ApS',
             simplifiedAddress: new SimplifiedAddressData('Nørregade 2', 'Aarhus', '8000', 'DK'),
         ),
-        lines: [new InvoiceLineData(id: '1', name: 'Consulting')],
+        lines: [new InvoiceLineData(id: 1, name: 'Consulting')],
         totals: new InvoiceTotalsData('1000.00', '250.00', '1250.00'),
     );
 
@@ -124,6 +125,7 @@ it('maps error statuses to exceptions', function (int $status, string $exception
     test()->fail('Expected an exception.');
 })->with([
     [400, BadRequestException::class],
+    [402, PaymentRequiredException::class],
     [403, ForbiddenException::class],
     [410, GoneException::class],
     [424, FailedDependencyException::class],

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Pagination;
 
-use Ecourier\Data\ParticipantData;
+use Ecourier\Data\Responses\ParticipantData;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 

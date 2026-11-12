@@ -23,4 +23,12 @@ enum PaymentMeansCode: string
             self::PaymentToAccount => [AccountSchemeId::DK_BBAN],
         };
     }
+
+    public function requiresBankId(): bool
+    {
+        return match ($this) {
+            self::CreditTransfer => false,
+            self::DebitTransfer, self::PaymentToAccount => true,
+        };
+    }
 }

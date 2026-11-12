@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use Ecourier\Data\AddressData;
-use Ecourier\Data\CompanyData;
-use Ecourier\Data\DocumentData;
-use Ecourier\Data\DocumentParticipantData;
-use Ecourier\Data\ParticipantData;
-use Ecourier\Data\ParticipantLookupData;
-use Ecourier\Data\PartyData;
+use Ecourier\Data\Responses\CompanyData;
+use Ecourier\Data\Responses\DocumentData;
+use Ecourier\Data\Responses\DocumentParticipantData;
+use Ecourier\Data\Responses\DocumentUblData;
+use Ecourier\Data\Responses\DocumentValidationData;
+use Ecourier\Data\Responses\ParticipantData;
+use Ecourier\Data\Responses\ParticipantLookupData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Direction;
 use Ecourier\Enums\DocumentStatus;
@@ -16,85 +16,6 @@ use Ecourier\Enums\DocumentType;
 use Ecourier\Enums\IdentifierScheme;
 use Ecourier\Enums\Mode;
 use Ecourier\Enums\SubmissionFormat;
-
-// --- AddressData ---
-
-it('serializes AddressData to array with all keys', function () {
-    $address = new AddressData(
-        street: 'Hovedgade 1',
-        city: 'Copenhagen',
-        zip: '1000',
-        country: 'DK',
-    );
-
-    expect($address->toArray())->toBe([
-        'street' => 'Hovedgade 1',
-        'city' => 'Copenhagen',
-        'zip' => '1000',
-        'country' => 'DK',
-    ]);
-});
-
-it('includes null values in AddressData toArray', function () {
-    $address = new AddressData();
-
-    $result = $address->toArray();
-
-    expect($result)->toHaveKeys(['street', 'city', 'zip', 'country']);
-    expect($result['street'])->toBeNull();
-    expect($result['city'])->toBeNull();
-});
-
-it('roundtrips AddressData through fromArray and toArray', function () {
-    $data = ['street' => 'Vesterbrogade 5', 'city' => 'Aarhus', 'zip' => '8000', 'country' => 'DK'];
-
-    expect(AddressData::fromArray($data)->toArray())->toBe($data);
-});
-
-// --- PartyData ---
-
-it('serializes PartyData to array with all keys', function () {
-    $party = new PartyData(
-        id: 'comp_01abc',
-        name: 'Acme Corporation',
-        cvr: '12345678',
-        vat: 'DK12345678',
-        country: 'DK',
-        email: 'billing@acme.com',
-    );
-
-    expect($party->toArray())->toBe([
-        'id' => 'comp_01abc',
-        'name' => 'Acme Corporation',
-        'cvr' => '12345678',
-        'vat' => 'DK12345678',
-        'country' => 'DK',
-        'email' => 'billing@acme.com',
-    ]);
-});
-
-it('includes null values in PartyData toArray', function () {
-    $party = new PartyData(id: 'comp_01', name: 'Test');
-
-    $result = $party->toArray();
-
-    expect($result)->toHaveKeys(['id', 'name', 'cvr', 'vat', 'country', 'email']);
-    expect($result['cvr'])->toBeNull();
-    expect($result['vat'])->toBeNull();
-});
-
-it('roundtrips PartyData through fromArray and toArray', function () {
-    $data = [
-        'id' => 'comp_01abc',
-        'name' => 'Acme Corporation',
-        'cvr' => '12345678',
-        'vat' => 'DK12345678',
-        'country' => 'DK',
-        'email' => 'billing@acme.com',
-    ];
-
-    expect(PartyData::fromArray($data)->toArray())->toBe($data);
-});
 
 // --- DocumentData ---
 
@@ -107,11 +28,17 @@ it('serializes DocumentData to array with all keys', function () {
         direction: Direction::Send,
         type: DocumentType::Invoice,
         submissionFormat: SubmissionFormat::JSON,
-        sender: new DocumentParticipantData('0184:12345678', IdentifierScheme::DK_CVR, '0184', '12345678'),
-        recipient: new DocumentParticipantData('0088:5790000123456', IdentifierScheme::GLN, '0088', '5790000123456'),
+        sender: new DocumentParticipantData(IdentifierScheme::DK_CVR, '12345678', '0184', '0184:12345678'),
+        recipient: new DocumentParticipantData(IdentifierScheme::GLN, '5790000123456', '0088', '0088:5790000123456'),
+        webUrl: 'https://app.ecourier.io/live/acme-danmark/documents/doc_01xyz',
+        createdAt: new DateTimeImmutable('2024-06-01T10:00:00Z'),
+        ubl: new DocumentUblData('INV-2024-001', null, null, null),
+        validation: new DocumentValidationData(errors: [], warnings: []),
+        attempts: [],
         latestE2eMessageUuid: 'ddc3b3ef-cbd4-4630-9d65-896b3e1abc61',
         latestE2eTransmissionId: 'trans_01def',
-        createdAt: new DateTimeImmutable('2024-06-01T10:00:00Z'),
+        company: null,
+        transmittedAt: null,
     );
 
     $result = $document->toArray();
@@ -135,9 +62,21 @@ it('includes null values in DocumentData toArray', function () {
         id: 'doc_01xyz',
         status: DocumentStatus::Pending,
         channel: Channel::Peppol,
-        mode: null,
+        mode: Mode::Test,
         direction: Direction::Receive,
         type: DocumentType::Invoice,
+        submissionFormat: SubmissionFormat::XML,
+        sender: new DocumentParticipantData(IdentifierScheme::DK_CVR, '12345678', '0184', '0184:12345678'),
+        recipient: new DocumentParticipantData(IdentifierScheme::GLN, '5790000123456', '0088', '0088:5790000123456'),
+        webUrl: 'https://app.ecourier.io/test/acme-danmark/documents/doc_01xyz',
+        createdAt: new DateTimeImmutable('2024-06-01T10:00:00Z'),
+        ubl: new DocumentUblData(null, null, null, null),
+        validation: new DocumentValidationData(errors: [], warnings: []),
+        attempts: [],
+        latestE2eMessageUuid: null,
+        latestE2eTransmissionId: null,
+        company: null,
+        transmittedAt: null,
     );
 
     $result = $document->toArray();
@@ -147,12 +86,9 @@ it('includes null values in DocumentData toArray', function () {
         'sender', 'recipient', 'latest_e2e_message_uuid', 'latest_e2e_transmission_id', 'company',
         'dashboard_url', 'created_at', 'transmitted_at', 'ubl', 'validation',
     ]);
-    expect($result['mode'])->toBeNull();
-    expect($result['sender'])->toBeNull();
+    expect($result['latest_e2e_message_uuid'])->toBeNull();
     expect($result['company'])->toBeNull();
-    expect($result['dashboard_url'])->toBeNull();
-    expect($result['ubl'])->toBeNull();
-    expect($result['validation'])->toBeNull();
+    expect($result['transmitted_at'])->toBeNull();
 });
 
 it('serializes DocumentData sender and recipient via ParticipantIdentifier toArray', function () {

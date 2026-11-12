@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-use Ecourier\Data\DocumentData;
-use Ecourier\Data\DocumentListItemData;
-use Ecourier\Data\Invoice\InvoiceDocumentData;
-use Ecourier\Data\Invoice\InvoiceContactData;
-use Ecourier\Data\Invoice\InvoiceLineData;
-use Ecourier\Data\Invoice\InvoicePaymentAccountData;
-use Ecourier\Data\Invoice\InvoicePaymentData;
-use Ecourier\Data\Invoice\InvoicePaymentMeansData;
-use Ecourier\Data\Invoice\InvoicePartyData;
-use Ecourier\Data\Invoice\InvoiceTaxCategoryData;
-use Ecourier\Data\Invoice\InvoiceTotalsData;
-use Ecourier\Data\Invoice\ParticipantIdentifier;
-use Ecourier\Data\Invoice\SimplifiedAddressData;
-use Ecourier\Data\SendDocumentData;
+use Ecourier\Data\Responses\DocumentData;
+use Ecourier\Data\Responses\DocumentListItemData;
+use Ecourier\Data\Requests\Invoice\InvoiceDocumentData;
+use Ecourier\Data\Requests\Invoice\InvoiceContactData;
+use Ecourier\Data\Requests\Invoice\InvoiceLineData;
+use Ecourier\Data\Requests\Invoice\InvoicePaymentAccountData;
+use Ecourier\Data\Requests\Invoice\InvoicePaymentData;
+use Ecourier\Data\Requests\Invoice\InvoicePaymentMeansData;
+use Ecourier\Data\Requests\Invoice\InvoicePartyData;
+use Ecourier\Data\Requests\Invoice\InvoiceTaxCategoryData;
+use Ecourier\Data\Requests\Invoice\InvoiceTotalsData;
+use Ecourier\Data\Requests\Invoice\ParticipantIdentifier;
+use Ecourier\Data\Requests\Invoice\SimplifiedAddressData;
+use Ecourier\Data\Responses\SendDocumentData;
 use Ecourier\EcourierConnector;
 use Ecourier\Enums\AccountSchemeId;
 use Ecourier\Enums\Channel;
@@ -24,6 +24,7 @@ use Ecourier\Enums\Direction;
 use Ecourier\Enums\DocumentStatus;
 use Ecourier\Enums\DocumentType;
 use Ecourier\Enums\IdentifierScheme;
+use Ecourier\Enums\InvoiceDocumentType;
 use Ecourier\Enums\Locale;
 use Ecourier\Enums\Mode;
 use Ecourier\Enums\PaymentMeansCode;
@@ -43,7 +44,7 @@ use Saloon\Http\Faking\MockResponse;
 function minimalInvoice(): InvoiceDocumentData
 {
     return new InvoiceDocumentData(
-        type: DocumentType::Invoice,
+        type: InvoiceDocumentType::Invoice,
         id: 'INV-2024-001',
         issueDate: '2024-06-01',
         currency: Currency::DKK,
@@ -57,7 +58,7 @@ function minimalInvoice(): InvoiceDocumentData
             name: 'Customer ApS',
             simplifiedAddress: new SimplifiedAddressData('Nørregade 2', 'Aarhus', '8000', 'DK'),
         ),
-        lines: [new InvoiceLineData(id: '1', name: 'Consulting')],
+        lines: [new InvoiceLineData(id: 1, name: 'Consulting')],
         totals: new InvoiceTotalsData(
             subtotalAmount: '1000.00',
             taxAmount: '250.00',
@@ -90,19 +91,19 @@ it('can get a document', function () {
     expect($document->direction)->toBe(Direction::Send);
     expect($document->type)->toBe(DocumentType::Invoice);
     expect($document->submissionFormat)->toBe(SubmissionFormat::JSON);
-    expect($document->sender?->scheme)->toBe(IdentifierScheme::DK_CVR);
-    expect($document->recipient?->identifier)->toBe('5790000123456');
+    expect($document->sender->scheme)->toBe(IdentifierScheme::DK_CVR);
+    expect($document->recipient->identifier)->toBe('5790000123456');
     expect($document->latestE2eMessageUuid)->toBe('ddc3b3ef-cbd4-4630-9d65-896b3e1abc61');
     expect($document->latestE2eTransmissionId)->toBe('trans_01def');
     expect($document->company?->name)->toBe('Acme Danmark A/S');
-    expect($document->dashboardUrl)->toBe('https://app.ecourier.io/live/acme-danmark/documents/01kmkdaf55vrrecfy70180tpr6');
+    expect($document->webUrl)->toBe('https://app.ecourier.io/live/acme-danmark/documents/01kmkdaf55vrrecfy70180tpr6');
     expect($document->transmittedAt?->format('Y-m-d\TH:i:s\Z'))->toBe('2024-06-01T10:05:00Z');
-    expect($document->ubl?->id)->toBe('INV-2024-001');
-    expect($document->validation?->hasErrors())->toBeFalse();
-    expect($document->validation?->hasWarnings())->toBeTrue();
-    expect($document->validation?->warnings[0]->code)->toBe('W-INV181');
-    expect($document->validation?->warnings[0]->message)->toBe('Note should not be longer than 500 characters');
-    expect($document->validation?->warnings[0]->location)->toBe('/Invoice/cbc:Note');
+    expect($document->ubl->id)->toBe('INV-2024-001');
+    expect($document->validation->hasErrors())->toBeFalse();
+    expect($document->validation->hasWarnings())->toBeTrue();
+    expect($document->validation->warnings[0]->code)->toBe('W-INV181');
+    expect($document->validation->warnings[0]->message)->toBe('Note should not be longer than 500 characters');
+    expect($document->validation->warnings[0]->location)->toBe('/Invoice/cbc:Note');
 });
 
 it('can get a reminder document', function () {
@@ -113,18 +114,12 @@ it('can get a reminder document', function () {
 });
 
 
-it('rejects document types that cannot be sent as JSON', function () {
-    new InvoiceDocumentData(
-        type: DocumentType::ApplicationResponse,
-        id: minimalInvoice()->id,
-        issueDate: minimalInvoice()->issueDate,
-        currency: minimalInvoice()->currency,
-        supplier: minimalInvoice()->supplier,
-        customer: minimalInvoice()->customer,
-        lines: minimalInvoice()->lines,
-        totals: minimalInvoice()->totals,
-    );
-})->throws(InvalidArgumentException::class, 'Document type ApplicationResponse cannot be sent as JSON');
+it('can get an order document', function () {
+    $fixture = json_decode(file_get_contents(__DIR__ . '/../Fixtures/document.json'), true);
+    $fixture['type'] = 'OrderResponseSimple';
+
+    expect(DocumentData::fromArray($fixture)->type)->toBe(DocumentType::OrderResponseSimple);
+});
 
 // --- MarkDocumentDeliveredRequest ---
 
@@ -311,7 +306,7 @@ it('serializes channel and document into the json body', function () {
 
 it('serializes invoice line fields from the api schema', function () {
     $line = new InvoiceLineData(
-        id: '1',
+        id: 1,
         name: 'Consulting',
         description: 'Implementation work',
         quantity: '2',
@@ -329,7 +324,7 @@ it('serializes invoice line fields from the api schema', function () {
     );
 
     expect($line->toArray())->toMatchArray([
-        'id' => '1',
+        'id' => 1,
         'name' => 'Consulting',
         'description' => 'Implementation work',
         'quantity' => '2',
@@ -367,6 +362,22 @@ it('requires a bank id for DK:BBAN accounts', function () {
         account: new InvoicePaymentAccountData(id: '1234567890', scheme: AccountSchemeId::DK_BBAN),
     );
 })->throws(InvalidArgumentException::class, 'requires a bank ID');
+
+it('accepts payment means without an account', function () {
+    $means = new InvoicePaymentMeansData(code: PaymentMeansCode::CreditTransfer);
+
+    expect($means->toArray())->toBe(['code' => '30']);
+});
+
+it('omits optional invoice party fields when not set', function () {
+    $party = new InvoicePartyData(
+        participant: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '12345678'),
+    );
+
+    expect($party->toArray())->toBe([
+        'participant' => ['scheme' => 'DK:CVR', 'id' => '12345678'],
+    ]);
+});
 
 it('accepts a credit transfer to an IBAN without a bank id', function () {
     $means = new InvoicePaymentMeansData(

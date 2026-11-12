@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Requests\Participants;
 
-use Ecourier\Data\ParticipantData;
+use Ecourier\Data\Responses\ParticipantData;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;

@@ -90,8 +90,8 @@ $response->json();   // raw array
 ### Create a company
 
 ```php
-use Ecourier\Data\CompanyAuthorisationSignerData;
-use Ecourier\Data\CreateCompanyData;
+use Ecourier\Data\Responses\CompanyAuthorisationSignerData;
+use Ecourier\Data\Requests\CreateCompanyData;
 
 $company = $ecourier->companies()->create(new CreateCompanyData(
     name: 'Acme Danmark A/S',
@@ -113,18 +113,21 @@ $company->authorisation->redirectUrl; // 'https://example.com/onboarding/authori
 
 ### Submit a signed authorisation PDF
 
-Teams with a special agreement can collect the end-user authorisation themselves. Create the company without a `signer`, then upload the signed agreement (a PDF up to 5 MB):
+Teams with a Custom signing flow can collect the end-user authorisation themselves. Create the company without a `signer`, then upload the signed agreement (a PDF up to 1 MB):
 
 ```php
-use Ecourier\Data\CompanyAuthorisationSignerData;
+use Ecourier\Data\Requests\SubmitAuthorisationPdfData;
+use Ecourier\Data\Responses\CompanyAuthorisationSignerData;
 
 $company = $ecourier->companies()->submitAuthorisationPdf(
     company: '0101knwp96k3ggvkra831yrd74zh',
-    pdf: file_get_contents('/path/to/signed-authorisation.pdf'),
-    signer: new CompanyAuthorisationSignerData(
-        firstName: 'Ada',
-        lastName: 'Lovelace',
-        title: 'CEO',
+    data: new SubmitAuthorisationPdfData(
+        pdf: file_get_contents('/path/to/signed-authorisation.pdf'), // raw PDF contents, not a path
+        signer: new CompanyAuthorisationSignerData(
+            firstName: 'Ada',
+            lastName: 'Lovelace',
+            title: 'CEO',
+        ),
     ),
 );
 ```
@@ -132,9 +135,11 @@ $company = $ecourier->companies()->submitAuthorisationPdf(
 ### Update a company
 
 ```php
+use Ecourier\Data\Requests\UpdateCompanyData;
+
 $company = $ecourier->companies()->update(
     company: '0101knwp96k3ggvkra831yrd74zh',
-    name: 'Acme Danmark A/S',
+    data: new UpdateCompanyData(name: 'Acme Danmark A/S'),
 );
 ```
 
@@ -157,19 +162,19 @@ Documents are the core of eCourier — they represent invoices and credit notes 
 Build a typed `InvoiceDocumentData` payload and submit it to a specific channel. eCourier converts it to the correct XML schema automatically.
 
 ```php
-use Ecourier\Data\Invoice\InvoiceDocumentData;
-use Ecourier\Data\Invoice\InvoiceLineData;
-use Ecourier\Data\Invoice\InvoicePartyData;
-use Ecourier\Data\Invoice\InvoiceTotalsData;
-use Ecourier\Data\Invoice\ParticipantIdentifier;
-use Ecourier\Data\Invoice\SimplifiedAddressData;
+use Ecourier\Data\Requests\Invoice\InvoiceDocumentData;
+use Ecourier\Data\Requests\Invoice\InvoiceLineData;
+use Ecourier\Data\Requests\Invoice\InvoicePartyData;
+use Ecourier\Data\Requests\Invoice\InvoiceTotalsData;
+use Ecourier\Data\Requests\Invoice\ParticipantIdentifier;
+use Ecourier\Data\Requests\Invoice\SimplifiedAddressData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Currency;
-use Ecourier\Enums\DocumentType;
+use Ecourier\Enums\InvoiceDocumentType;
 use Ecourier\Enums\IdentifierScheme;
 
 $invoice = new InvoiceDocumentData(
-    type: DocumentType::Invoice,
+    type: InvoiceDocumentType::Invoice,
     id: 'INV-2024-001',
     issueDate: '2024-06-01',
     currency: Currency::DKK,
@@ -184,7 +189,7 @@ $invoice = new InvoiceDocumentData(
         simplifiedAddress: new SimplifiedAddressData('Nørregade 2', 'Aarhus', '8000', 'DK'),
     ),
     lines: [
-        new InvoiceLineData(id: '1', name: 'Consulting'),
+        new InvoiceLineData(id: 1, name: 'Consulting'),
     ],
     totals: new InvoiceTotalsData(
         subtotalAmount: '1000.00',
@@ -202,7 +207,7 @@ echo $document->id; // 01kmkdaf55vrrecfy70180tpr6
 
 #### Payment means
 
-Each payment means needs an account, and the code decides which account scheme is allowed. The SDK checks this when you build `InvoicePaymentMeansData` and throws `InvalidArgumentException` otherwise.
+The account is optional, but when you give one, the code decides which account scheme is allowed. The SDK checks this when you build `InvoicePaymentMeansData` and throws `InvalidArgumentException` otherwise.
 
 | Code | Account scheme | `bankId` |
 |---|---|---|
@@ -210,21 +215,23 @@ Each payment means needs an account, and the code decides which account scheme i
 | `DebitTransfer` (31) | `IBAN` | Required BIC |
 | `PaymentToAccount` (42) | `DK_BBAN` | Required 4-digit registration number |
 
+A standard Peppol invoice paid by bank transfer to an IBAN:
+
 ```php
-use Ecourier\Data\Invoice\InvoicePaymentAccountData;
-use Ecourier\Data\Invoice\InvoicePaymentData;
-use Ecourier\Data\Invoice\InvoicePaymentMeansData;
+use Ecourier\Data\Requests\Invoice\InvoicePaymentAccountData;
+use Ecourier\Data\Requests\Invoice\InvoicePaymentData;
+use Ecourier\Data\Requests\Invoice\InvoicePaymentMeansData;
 use Ecourier\Enums\AccountSchemeId;
 use Ecourier\Enums\PaymentMeansCode;
 
 $payment = new InvoicePaymentData(
     paymentMeans: [
         new InvoicePaymentMeansData(
-            code: PaymentMeansCode::PaymentToAccount,
+            code: PaymentMeansCode::CreditTransfer,
             account: new InvoicePaymentAccountData(
-                id: '1234567890',
-                scheme: AccountSchemeId::DK_BBAN,
-                bankId: '1234',
+                id: 'DK5000400440116243',
+                scheme: AccountSchemeId::IBAN,
+                bankId: 'DABADKKK', // BIC — optional for CreditTransfer, but commonly expected
             ),
             remittanceText: 'INV-2024-001',
         ),
@@ -284,7 +291,7 @@ $document->recipient->identifier; // '5790000123456'
 $document->company->name;    // 'Acme Danmark A/S'
 
 // Validation errors and warnings found for the document
-if ($document->validation?->hasErrors()) {
+if ($document->validation->hasErrors()) {
     foreach ($document->validation->errors as $error) {
         echo "{$error->code}: {$error->message} at {$error->location}";
     }
@@ -380,28 +387,32 @@ $response->json();   // raw array
 Leave `identifier` unset (or `null`) when the scheme is `GLN` — a GLN is assigned automatically.
 
 ```php
-use Ecourier\Data\CreateParticipantData;
+use Ecourier\Data\Requests\CreateParticipantData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
 
 $participant = $ecourier->participants()->create(new CreateParticipantData(
     companyId: '0101knwp96k3ggvkra831yrd74zh',
-    scheme: IdentifierScheme::DK_CVR,
     channels: [Channel::NemHandel],
+    scheme: IdentifierScheme::DK_CVR,
     identifier: '12345678',
+    capabilitySetId: null, // omit or pass null to use the default capability set
 ));
 ```
 
 ### Update a participant
 
-Update replaces the full set of channels the participant is registered on — channels not listed are removed.
+`channels`, when given, replaces the full set of channels the participant is registered on — channels not listed are removed. Leave it out to keep the current channels. `capabilitySetId` is likewise left out to keep the current capability set, or passed as `null` to reset to the default.
 
 ```php
+use Ecourier\Data\Requests\UpdateParticipantData;
 use Ecourier\Enums\Channel;
 
 $participant = $ecourier->participants()->update(
     participant: '0101knwp96k3ggvkra831yrd77ghi',
-    channels: [Channel::NemHandel, Channel::Peppol],
+    data: new UpdateParticipantData(
+        channels: [Channel::NemHandel, Channel::Peppol],
+    ),
 );
 ```
 
@@ -441,8 +452,8 @@ echo $participant->orgNo;      // 9999796418186
 eCourier sends webhooks for document lifecycle events. Parse the raw request body with `WebhookEventFactory` to get a typed event DTO — no need to know the event type up front.
 
 ```php
-use Ecourier\Data\Webhook\WebhookEventFactory;
-use Ecourier\Data\Webhook\WebhookSignature;
+use Ecourier\Data\Responses\Webhook\WebhookEventFactory;
+use Ecourier\Data\Responses\Webhook\WebhookSignature;
 
 $body = $request->getContent(); // the raw, unparsed body
 
@@ -455,12 +466,25 @@ $event = WebhookEventFactory::fromRequestBody($body);
 
 Every webhook is signed with your webhook secret: the `Signature` header holds the HMAC-SHA256 hex digest of the raw request body. Always verify it against the body exactly as received, before decoding it.
 
+Without a framework request object, `verifyCurrentRequest()` reads the raw body from `php://input` and the `Signature` header from `$_SERVER` for you:
+
+```php
+if (! WebhookSignature::verifyCurrentRequest($webhookSecret)) {
+    http_response_code(401);
+    exit;
+}
+
+$event = WebhookEventFactory::fromRequestBody(file_get_contents('php://input'));
+```
+
+If your framework has already consumed the body (so `php://input` can't be re-read), pass it explicitly: `WebhookSignature::verifyCurrentRequest($webhookSecret, $body)`.
+
 `fromArray()` is also available if you've already decoded the JSON body yourself.
 
 Every event type maps to a subclass of the abstract `WebhookEvent`. Document events (`Document.Send.Created`, `Document.Send.Delivered`, `Document.Send.Failed`, `Document.Receive.Created`, `Document.Receive.Ready`, `Document.Receive.Delivered`) map to `DocumentWebhook`, which carries the same `DocumentData` DTO used by [`documents()->find()`](#get-a-single-document):
 
 ```php
-use Ecourier\Data\Webhook\DocumentWebhook;
+use Ecourier\Data\Responses\Webhook\DocumentWebhook;
 use Ecourier\Enums\WebhookEventType;
 
 if ($event instanceof DocumentWebhook) {
@@ -570,6 +594,7 @@ The SDK throws typed exceptions for every error case — no checking status code
 |---|---|---|
 | `BadRequestException` | 400 | Malformed request, e.g. invalid JSON |
 | `AuthenticationException` | 401 | Invalid or missing API key |
+| `PaymentRequiredException` | 402 | Insufficient balance to send the document |
 | `ForbiddenException` | 403 | The API key is not allowed to do this |
 | `NotFoundException` | 404 | Resource does not exist |
 | `GoneException` | 410 | The document content has expired |
@@ -609,7 +634,8 @@ All typed fields use PHP backed enums, giving you IDE autocomplete and preventin
 | Enum | Values |
 |---|---|
 | `DocumentStatus` | `Pending`, `Ready`, `Delivered`, `Failed` |
-| `DocumentType` | `Invoice`, `CreditNote`, `Reminder`, `ApplicationResponse`, `EndUserStatisticsReport`, `TransactionStatisticsReport`, `Other` |
+| `DocumentType` | `Invoice`, `CreditNote`, `Reminder`, `ApplicationResponse`, `Order`, `OrderCancellation`, `OrderChange`, `OrderResponse`, `OrderResponseSimple`, `Other` |
+| `InvoiceDocumentType` | `Invoice`, `CreditNote` (the types `sendJson()` accepts) |
 | `Direction` | `Send`, `Receive` |
 | `Channel` | `Peppol`, `NemHandel` |
 | `Mode` | `Live`, `Test` |
@@ -732,6 +758,12 @@ All resources return typed DTOs with readonly properties.
 | `$signer` | `?CompanyAuthorisationSignerData` | Yes, unless your team submits its own signed authorisation PDF |
 | `$redirectUrl` | `?string` | No |
 
+### `UpdateCompanyData` (request payload)
+
+| Property | Type | Required |
+|---|---|---|
+| `$name` | `string` | Yes |
+
 ### `CompanyAuthorisationData`
 
 | Property | Type |
@@ -740,6 +772,13 @@ All resources return typed DTOs with readonly properties.
 | `$signUrl` | `?string` |
 | `$signer` | `CompanyAuthorisationSignerData` |
 | `$redirectUrl` | `?string` |
+
+### `SubmitAuthorisationPdfData` (request payload)
+
+| Property | Type | Required |
+|---|---|---|
+| `$pdf` | `string` | Yes — raw PDF file contents, not a file path |
+| `$signer` | `CompanyAuthorisationSignerData` | Yes |
 
 ### `DocumentData`
 
@@ -750,20 +789,33 @@ Shared by document endpoints (`find`, `markDelivered`) and the `document` payloa
 | `$id` | `string` |
 | `$status` | `DocumentStatus` |
 | `$channel` | `Channel` |
-| `$mode` | `?Mode` |
+| `$mode` | `Mode` |
 | `$direction` | `Direction` |
 | `$type` | `DocumentType` |
-| `$submissionFormat` | `?SubmissionFormat` |
-| `$sender` | `?DocumentParticipantData` |
-| `$recipient` | `?DocumentParticipantData` |
+| `$submissionFormat` | `SubmissionFormat` |
+| `$sender` | `DocumentParticipantData` |
+| `$recipient` | `DocumentParticipantData` |
+| `$webUrl` | `string` |
+| `$createdAt` | `DateTimeImmutable` |
+| `$ubl` | `DocumentUblData` |
+| `$validation` | `DocumentValidationData` |
 | `$latestE2eMessageUuid` | `?string` |
 | `$latestE2eTransmissionId` | `?string` |
 | `$company` | `?DocumentCompanyData` |
-| `$dashboardUrl` | `?string` |
-| `$createdAt` | `?DateTimeImmutable` |
 | `$transmittedAt` | `?DateTimeImmutable` |
-| `$ubl` | `?DocumentUblData` |
-| `$validation` | `?DocumentValidationData` |
+| `$attempts` | `DocumentAttemptData[]` |
+
+### `DocumentAttemptData`
+
+A single delivery attempt, oldest first. Empty for received documents.
+
+| Property | Type |
+|---|---|
+| `$status` | `DocumentAttemptStatus` |
+| `$errorMessage` | `?string` |
+| `$e2eMessageUuid` | `string` |
+| `$e2eTransmissionId` | `?string` |
+| `$createdAt` | `DateTimeImmutable` |
 
 ### `DocumentListItemData`
 
@@ -783,10 +835,10 @@ Returned by `documents()->list()`.
 
 | Property | Type |
 |---|---|
-| `$fullIdentifier` | `string` |
 | `$scheme` | `IdentifierScheme` |
-| `$schemeIcd` | `string` |
 | `$identifier` | `string` |
+| `$schemeIcd` | `string` |
+| `$fullIdentifier` | `string` |
 
 ### `DocumentUblData`
 
@@ -820,10 +872,11 @@ Returned by `documents()->list()`.
 |---|---|
 | `$id` | `string` |
 | `$company` | `ParticipantCompanyData` |
+| `$capabilitySet` | `?ParticipantCapabilitySetData` |
 | `$mode` | `Mode` |
 | `$scheme` | `IdentifierScheme` |
-| `$schemeIcd` | `string` |
 | `$identifier` | `string` |
+| `$schemeIcd` | `string` |
 | `$fullIdentifier` | `string` |
 | `$channels` | `Channel[]` |
 | `$createdAt` | `DateTimeImmutable` |
@@ -836,14 +889,29 @@ Returned by `documents()->list()`.
 | `$id` | `string` |
 | `$name` | `string` |
 
+### `ParticipantCapabilitySetData`
+
+| Property | Type |
+|---|---|
+| `$id` | `string` |
+| `$name` | `string` |
+
 ### `CreateParticipantData` (request payload)
 
 | Property | Type | Required |
 |---|---|---|
 | `$companyId` | `string` | Yes |
-| `$scheme` | `IdentifierScheme` | Yes |
 | `$channels` | `Channel[]` | Yes |
+| `$scheme` | `IdentifierScheme` | Yes |
 | `$identifier` | `?string` | No — leave `null` for GLN |
+| `$capabilitySetId` | `?string` | No — omit or pass `null` to use the default capability set |
+
+### `UpdateParticipantData` (request payload)
+
+| Property | Type | Required |
+|---|---|---|
+| `$channels` | `?Channel[]` | No — omit to keep the current channels |
+| `$capabilitySetId` | `string\|Undefined\|null` | No — omit to keep the current capability set, or pass `null` to reset to the default |
 
 ### `ParticipantLookupData`
 
@@ -889,7 +957,7 @@ Extends `WebhookEvent`. Returned by `WebhookEventFactory` for all `Document.*` e
 
 | Property | Type | Required |
 |---|---|---|
-| `$type` | `DocumentType` (`Invoice` or `CreditNote`) | Yes |
+| `$type` | `InvoiceDocumentType` | Yes |
 | `$id` | `string` | Yes |
 | `$issueDate` | `string` | Yes |
 | `$currency` | `Currency` | Yes |
@@ -907,8 +975,8 @@ Extends `WebhookEvent`. Returned by `WebhookEventFactory` for all `Document.*` e
 | Property | Type | Required |
 |---|---|---|
 | `$participant` | `ParticipantIdentifier` | Yes |
-| `$name` | `string` | Yes |
-| `$simplifiedAddress` | `SimplifiedAddressData` | Yes |
+| `$name` | `?string` | No |
+| `$simplifiedAddress` | `?SimplifiedAddressData` | No |
 | `$registrationNumber` | `?string` | No |
 | `$vatId` | `?string` | No |
 | `$contact` | `?InvoiceContactData` | No |
@@ -918,7 +986,7 @@ Extends `WebhookEvent`. Returned by `WebhookEventFactory` for all `Document.*` e
 | Property | Type | Required |
 |---|---|---|
 | `$code` | `PaymentMeansCode` | Yes |
-| `$account` | `InvoicePaymentAccountData` | Yes |
+| `$account` | `?InvoicePaymentAccountData` | No |
 | `$id` | `?int` | No |
 | `$remittanceText` | `?string` | No |
 
@@ -926,7 +994,7 @@ Extends `WebhookEvent`. Returned by `WebhookEventFactory` for all `Document.*` e
 
 | Property | Type | Required |
 |---|---|---|
-| `$id` | `string` | Yes |
+| `$id` | `int` | Yes |
 | `$name` | `string` | Yes |
 | `$description` | `?string` | No |
 | `$quantity` | `?string` | No |
