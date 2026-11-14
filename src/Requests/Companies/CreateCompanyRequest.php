@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Ecourier\Requests\Companies;
 
-use Ecourier\Data\CompanyData;
-use Ecourier\Data\CreateCompanyData;
+use Ecourier\Data\Responses\CompanyData;
+use Ecourier\Data\Requests\CreateCompanyData;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;

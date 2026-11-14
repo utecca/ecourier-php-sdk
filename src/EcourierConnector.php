@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace Ecourier;
 
+use Composer\InstalledVersions;
 use Ecourier\Exceptions\AuthenticationException;
+use Ecourier\Exceptions\BadRequestException;
 use Ecourier\Exceptions\EcourierException;
+use Ecourier\Exceptions\FailedDependencyException;
+use Ecourier\Exceptions\ForbiddenException;
+use Ecourier\Exceptions\GoneException;
 use Ecourier\Exceptions\NotFoundException;
+use Ecourier\Exceptions\PaymentRequiredException;
 use Ecourier\Exceptions\ValidationException;
 use Ecourier\Resources\CompaniesResource;
 use Ecourier\Resources\DocumentsResource;
@@ -43,9 +49,29 @@ class EcourierConnector extends Connector
     protected function defaultHeaders(): array
     {
         return [
-            'Content-Type' => 'application/json',
             'Accept' => 'application/json',
+            'User-Agent' => $this->userAgent(),
         ];
+    }
+
+    private function userAgent(): string
+    {
+        $version = InstalledVersions::isInstalled('ecourier/ecourier')
+            ? InstalledVersions::getPrettyVersion('ecourier/ecourier') ?? 'unknown'
+            : 'unknown';
+
+        $saloonVersion = InstalledVersions::isInstalled('saloonphp/saloon')
+            ? InstalledVersions::getPrettyVersion('saloonphp/saloon') ?? 'unknown'
+            : 'unknown';
+
+        $userAgent = sprintf('ecourier-php-sdk/%s (PHP %s; %s) saloon/%s', $version, PHP_VERSION, PHP_OS_FAMILY, $saloonVersion);
+
+        if (InstalledVersions::isInstalled('ecourier/ecourier-laravel')) {
+            $laravelVersion = InstalledVersions::getPrettyVersion('ecourier/ecourier-laravel') ?? 'unknown';
+            $userAgent .= sprintf(' ecourier-laravel/%s', $laravelVersion);
+        }
+
+        return $userAgent;
     }
 
     public function boot(\Saloon\Http\PendingRequest $pendingRequest): void
@@ -56,9 +82,14 @@ class EcourierConnector extends Connector
             }
 
             throw match ($response->status()) {
+                400 => BadRequestException::fromResponse($response),
                 401 => AuthenticationException::fromResponse($response),
+                402 => PaymentRequiredException::fromResponse($response),
+                403 => ForbiddenException::fromResponse($response),
                 404 => NotFoundException::fromResponse($response),
+                410 => GoneException::fromResponse($response),
                 422 => ValidationException::fromResponse($response),
+                424 => FailedDependencyException::fromResponse($response),
                 default => EcourierException::fromResponse($response),
             };
         });

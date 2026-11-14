@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Requests\Lookup;
 
-use Ecourier\Data\ParticipantLookupData;
+use Ecourier\Data\Responses\ParticipantLookupData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
 use Saloon\Enums\Method;

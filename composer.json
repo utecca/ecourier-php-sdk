@@ -5,13 +5,15 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "composer-runtime-api": "^2.0",
         "saloonphp/saloon": "^4.0",
         "saloonphp/pagination-plugin": "^2.0"
     },
     "require-dev": {
         "laravel/pao": "^1.0",
         "laravel/pint": "^1.0",
-        "pestphp/pest": "^4.0"
+        "pestphp/pest": "^4.0",
+        "phpstan/phpstan": "^2.1"
     },
     "autoload": {
         "psr-4": {
@@ -24,7 +26,9 @@
         }
     },
     "scripts": {
-        "test": "pest"
+        "test": "pest",
+        "lint": "pint --test",
+        "analyse": "phpstan analyse"
     },
     "minimum-stability": "stable",
     "prefer-stable": true,

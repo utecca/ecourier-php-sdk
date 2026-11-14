@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Ecourier\Resources;
 
-use Ecourier\Data\CreateParticipantData;
-use Ecourier\Data\ParticipantData;
+use Ecourier\Data\Requests\CreateParticipantData;
+use Ecourier\Data\Requests\UpdateParticipantData;
+use Ecourier\Data\Responses\ParticipantData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
 use Ecourier\Pagination\ParticipantsPaginator;
@@ -48,10 +49,9 @@ class ParticipantsResource extends BaseResource
         return $this->connector->send(new CreateParticipantRequest($participant))->dto();
     }
 
-    /** @param Channel[] $channels */
-    public function update(string $participant, array $channels): ParticipantData
+    public function update(string $participant, UpdateParticipantData $data): ParticipantData
     {
-        return $this->connector->send(new UpdateParticipantRequest($participant, $channels))->dto();
+        return $this->connector->send(new UpdateParticipantRequest($participant, $data))->dto();
     }
 
     public function delete(string $participant): Response

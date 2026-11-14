@@ -40,6 +40,10 @@
                 "id": "INV-2024-001",
                 "profile_id": "urn:www.nesubl.eu:profiles:profile5:ver2.0",
                 "customization_id": "OIOUBL-2.1"
+            },
+            "validation": {
+                "errors": [],
+                "warnings": []
             }
         }
     }

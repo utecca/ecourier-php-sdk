@@ -4,6 +4,7 @@
         "id": "0101knwp96k3ggvkra831yrd74zh",
         "name": "Acme Danmark A/S"
     },
+    "capability_set": null,
     "mode": "Live",
     "scheme": "GLN",
     "scheme_icd": "0088",

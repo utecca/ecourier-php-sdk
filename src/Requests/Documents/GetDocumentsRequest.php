@@ -8,7 +8,6 @@ use BackedEnum;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Direction;
 use Ecourier\Enums\DocumentStatus;
-use Ecourier\Enums\Sort;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\PaginationPlugin\Contracts\Paginatable;
@@ -22,7 +21,6 @@ class GetDocumentsRequest extends Request implements Paginatable
         private readonly Channel|array|null $channel = null,
         private readonly string|array|null $companyId = null,
         private readonly Direction|array|null $direction = null,
-        private readonly ?Sort $sort = null,
         private readonly int $perPage = 10,
     ) {}
 
@@ -34,10 +32,6 @@ class GetDocumentsRequest extends Request implements Paginatable
     protected function defaultQuery(): array
     {
         $query = ['per_page' => $this->perPage];
-
-        if ($this->sort !== null) {
-            $query['sort'] = $this->sort->value;
-        }
 
         $filter = array_filter([
             'channel' => $this->values($this->channel),

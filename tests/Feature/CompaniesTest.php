@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-use Ecourier\Data\CompanyData;
-use Ecourier\Data\CompanyListItemData;
-use Ecourier\Data\CompanyAuthorisationSignerData;
-use Ecourier\Data\CreateCompanyData;
+use Ecourier\Data\Responses\CompanyData;
+use Ecourier\Data\Responses\CompanyListItemData;
+use Ecourier\Data\Responses\CompanyAuthorisationSignerData;
+use Ecourier\Data\Requests\CreateCompanyData;
+use Ecourier\Data\Requests\SubmitAuthorisationPdfData;
+use Ecourier\Data\Requests\UpdateCompanyData;
 use Ecourier\EcourierConnector;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Mode;
@@ -14,6 +16,7 @@ use Ecourier\Requests\Companies\CreateCompanyRequest;
 use Ecourier\Requests\Companies\DeleteCompanyRequest;
 use Ecourier\Requests\Companies\GetCompaniesRequest;
 use Ecourier\Requests\Companies\GetCompanyRequest;
+use Ecourier\Requests\Companies\SubmitAuthorisationPdfRequest;
 use Ecourier\Requests\Companies\UpdateCompanyRequest;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -94,6 +97,7 @@ it('can get a company', function () {
     expect($company->country)->toBe('DK');
     expect($company->authorisation?->signed)->toBeFalse();
     expect($company->authorisation?->signer->firstName)->toBe('Pernille');
+    expect($company->authorisation?->redirectUrl)->toBe('https://example.com/onboarding/authorisation-complete');
     expect($company->participants)->toHaveCount(1);
     expect($company->participants[0]->identifier)->toBe('5790000435944');
 });
@@ -145,6 +149,7 @@ it('serializes create company body from the api schema', function () {
         country: 'DK',
         companyNo: '12345678',
         signer: new CompanyAuthorisationSignerData('Ada', 'Lovelace', 'CEO'),
+        redirectUrl: 'https://example.com/onboarding/authorisation-complete',
     ));
 
     expect($request->body()->all())->toBe([
@@ -156,6 +161,83 @@ it('serializes create company body from the api schema', function () {
             'last_name' => 'Lovelace',
             'title' => 'CEO',
         ],
+        'redirect_url' => 'https://example.com/onboarding/authorisation-complete',
+    ]);
+});
+
+it('omits redirect url when not set', function () {
+    $request = new CreateCompanyRequest(new CreateCompanyData(
+        name: 'Acme Danmark A/S',
+        country: 'DK',
+        companyNo: '12345678',
+        signer: new CompanyAuthorisationSignerData('Ada', 'Lovelace', 'CEO'),
+    ));
+
+    expect($request->body()->all())->not->toHaveKey('redirect_url');
+});
+
+it('omits the signer when not set', function () {
+    $request = new CreateCompanyRequest(new CreateCompanyData(
+        name: 'Acme Danmark A/S',
+        country: 'DK',
+        companyNo: '12345678',
+    ));
+
+    expect($request->body()->all())->toBe([
+        'name' => 'Acme Danmark A/S',
+        'country' => 'DK',
+        'company_no' => '12345678',
+    ]);
+});
+
+it('can submit a signed authorisation pdf', function () {
+    $mockClient = new MockClient([
+        SubmitAuthorisationPdfRequest::class => MockResponse::make(
+            body: file_get_contents(__DIR__ . '/../Fixtures/company.json'),
+            status: 201,
+            headers: ['Content-Type' => 'application/json'],
+        ),
+    ]);
+
+    $connector = new EcourierConnector(apiKey: 'pk_test_fake');
+    $connector->withMockClient($mockClient);
+
+    $company = $connector->companies()->submitAuthorisationPdf(
+        company: '0101knwp96k3ggvkra831yrd74zh',
+        data: new SubmitAuthorisationPdfData(
+            pdf: '%PDF-1.4',
+            signer: new CompanyAuthorisationSignerData('Ada', 'Lovelace', 'CEO'),
+        ),
+    );
+
+    expect($company)->toBeInstanceOf(CompanyData::class);
+    $mockClient->assertSent(function (SubmitAuthorisationPdfRequest $request, $response): bool {
+        $pending = $response->getPendingRequest();
+
+        return $request->resolveEndpoint() === '/companies/0101knwp96k3ggvkra831yrd74zh/authorisation/pdf'
+            && str_starts_with($pending->headers()->get('Content-Type'), 'multipart/form-data; boundary=');
+    });
+});
+
+it('serializes the authorisation pdf as multipart fields', function () {
+    $request = new SubmitAuthorisationPdfRequest(
+        company: '0101knwp96k3ggvkra831yrd74zh',
+        data: new SubmitAuthorisationPdfData(
+            pdf: '%PDF-1.4',
+            signer: new CompanyAuthorisationSignerData('Ada', 'Lovelace', 'CEO'),
+        ),
+    );
+
+    $fields = [];
+    foreach ($request->body()->all() as $value) {
+        $fields[$value->name] = [$value->value, $value->filename];
+    }
+
+    expect($fields)->toBe([
+        'pdf' => ['%PDF-1.4', 'authorisation.pdf'],
+        'signer[first_name]' => ['Ada', null],
+        'signer[last_name]' => ['Lovelace', null],
+        'signer[title]' => ['CEO', null],
     ]);
 });
 
@@ -171,14 +253,17 @@ it('can update a company', function () {
     $connector = new EcourierConnector(apiKey: 'pk_test_fake');
     $connector->withMockClient($mockClient);
 
-    $company = $connector->companies()->update('0101knwp96k3ggvkra831yrd74zh', 'Acme Danmark A/S');
+    $company = $connector->companies()->update(
+        '0101knwp96k3ggvkra831yrd74zh',
+        new UpdateCompanyData('Acme Danmark A/S'),
+    );
 
     expect($company)->toBeInstanceOf(CompanyData::class);
     $mockClient->assertSent(UpdateCompanyRequest::class);
 });
 
 it('serializes update company body from the api schema', function () {
-    $request = new UpdateCompanyRequest('0101knwp96k3ggvkra831yrd74zh', 'Acme Danmark A/S');
+    $request = new UpdateCompanyRequest('0101knwp96k3ggvkra831yrd74zh', new UpdateCompanyData('Acme Danmark A/S'));
 
     expect($request->resolveEndpoint())->toBe('/companies/0101knwp96k3ggvkra831yrd74zh');
     expect($request->body()->all())->toBe(['name' => 'Acme Danmark A/S']);

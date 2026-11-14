@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Ecourier\Requests\Participants;
 
-use Ecourier\Data\ParticipantData;
+use Ecourier\Data\Requests\UpdateParticipantData;
+use Ecourier\Data\Responses\ParticipantData;
 use Ecourier\Enums\Channel;
+use Ecourier\Enums\Undefined;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -18,10 +20,9 @@ class UpdateParticipantRequest extends Request implements HasBody
 
     protected Method $method = Method::PATCH;
 
-    /** @param Channel[] $channels */
     public function __construct(
         private readonly string $participant,
-        private readonly array $channels,
+        private readonly UpdateParticipantData $data,
     ) {}
 
     public function resolveEndpoint(): string
@@ -31,9 +32,17 @@ class UpdateParticipantRequest extends Request implements HasBody
 
     protected function defaultBody(): array
     {
-        return [
-            'channels' => array_map(fn(Channel $channel) => $channel->value, $this->channels),
-        ];
+        $body = [];
+
+        if ($this->data->channels !== null) {
+            $body['channels'] = array_map(fn(Channel $channel) => $channel->value, $this->data->channels);
+        }
+
+        if (!($this->data->capabilitySetId instanceof Undefined)) {
+            $body['capability_set_id'] = $this->data->capabilitySetId;
+        }
+
+        return $body;
     }
 
     public function createDtoFromResponse(Response $response): ParticipantData

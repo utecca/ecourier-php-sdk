@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Ecourier\Enums;
 
-use Ecourier\Data\Webhook\DocumentWebhook;
-use Ecourier\Data\Webhook\WebhookEvent;
+use Ecourier\Data\Responses\Webhook\DocumentWebhook;
+use Ecourier\Data\Responses\Webhook\WebhookEvent;
 
 enum WebhookEventType: string
 {

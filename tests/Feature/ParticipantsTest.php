@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-use Ecourier\Data\CreateParticipantData;
-use Ecourier\Data\ParticipantData;
+use Ecourier\Data\Requests\CreateParticipantData;
+use Ecourier\Data\Requests\UpdateParticipantData;
+use Ecourier\Data\Responses\ParticipantData;
 use Ecourier\EcourierConnector;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
@@ -142,9 +143,10 @@ it('serializes create participant body from the api schema', function () {
 
     expect($request->body()->all())->toBe([
         'company_id' => '0101knwp96k3ggvkra831yrd74zh',
+        'channels' => ['NemHandel'],
         'scheme' => 'DK:CVR',
         'identifier' => '12345678',
-        'channels' => ['NemHandel'],
+        'capability_set_id' => null,
     ]);
 });
 
@@ -157,9 +159,10 @@ it('leaves identifier null when creating a GLN participant', function () {
 
     expect($request->body()->all())->toBe([
         'company_id' => '0101knwp96k3ggvkra831yrd74zh',
+        'channels' => ['NemHandel', 'Peppol'],
         'scheme' => 'GLN',
         'identifier' => null,
-        'channels' => ['NemHandel', 'Peppol'],
+        'capability_set_id' => null,
     ]);
 });
 
@@ -177,7 +180,7 @@ it('can update a participant', function () {
 
     $participant = $connector->participants()->update(
         '0101knwp96k3ggvkra831yrd77ghi',
-        [Channel::NemHandel],
+        new UpdateParticipantData(channels: [Channel::NemHandel]),
     );
 
     expect($participant)->toBeInstanceOf(ParticipantData::class);
@@ -185,10 +188,31 @@ it('can update a participant', function () {
 });
 
 it('serializes update participant body from the api schema', function () {
-    $request = new UpdateParticipantRequest('0101knwp96k3ggvkra831yrd77ghi', [Channel::NemHandel, Channel::Peppol]);
+    $request = new UpdateParticipantRequest(
+        '0101knwp96k3ggvkra831yrd77ghi',
+        new UpdateParticipantData(channels: [Channel::NemHandel, Channel::Peppol]),
+    );
 
     expect($request->resolveEndpoint())->toBe('/participants/0101knwp96k3ggvkra831yrd77ghi');
     expect($request->body()->all())->toBe(['channels' => ['NemHandel', 'Peppol']]);
+});
+
+it('omits channels from the update participant body when left out', function () {
+    $request = new UpdateParticipantRequest(
+        '0101knwp96k3ggvkra831yrd77ghi',
+        new UpdateParticipantData(capabilitySetId: '0101knwp96k3ggvkra831yrd7cap'),
+    );
+
+    expect($request->body()->all())->toBe(['capability_set_id' => '0101knwp96k3ggvkra831yrd7cap']);
+});
+
+it('resets the capability set when capabilitySetId is explicitly null', function () {
+    $request = new UpdateParticipantRequest(
+        '0101knwp96k3ggvkra831yrd77ghi',
+        new UpdateParticipantData(capabilitySetId: null),
+    );
+
+    expect($request->body()->all())->toBe(['capability_set_id' => null]);
 });
 
 it('can delete a participant', function () {
