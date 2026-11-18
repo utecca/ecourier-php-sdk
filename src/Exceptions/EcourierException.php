@@ -26,6 +26,16 @@ class EcourierException extends Exception
         return $this->response;
     }
 
+    /**
+     * The API's machine-readable error code, e.g. `Billing.InsufficientBalance`, when the error has one.
+     */
+    public function getErrorCode(): ?string
+    {
+        $code = static::decodeBody($this->response)['code'] ?? null;
+
+        return is_string($code) ? $code : null;
+    }
+
     public static function fromResponse(Response $response): static
     {
         $body = static::decodeBody($response);

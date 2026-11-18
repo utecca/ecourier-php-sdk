@@ -207,7 +207,7 @@ echo $document->id; // 01kmkdaf55vrrecfy70180tpr6
 
 #### Payment means
 
-The account is optional, but when you give one, the code decides which account scheme is allowed. The SDK checks this when you build `InvoicePaymentMeansData` and throws `InvalidArgumentException` otherwise.
+Every payment means needs an account, and the code decides which account scheme is allowed. The SDK checks this when you build `InvoicePaymentMeansData` and throws `InvalidArgumentException` otherwise.
 
 | Code | Account scheme | `bankId` |
 |---|---|---|
@@ -595,7 +595,7 @@ The SDK throws typed exceptions for every error case — no checking status code
 | `BadRequestException` | 400 | Malformed request, e.g. invalid JSON |
 | `AuthenticationException` | 401 | Invalid or missing API key |
 | `PaymentRequiredException` | 402 | Insufficient balance to send the document |
-| `ForbiddenException` | 403 | The API key is not allowed to do this |
+| `ForbiddenException` | 403 | The API key is not allowed to do this, or the team is suspended from live mode |
 | `NotFoundException` | 404 | Resource does not exist |
 | `GoneException` | 410 | The document content has expired |
 | `ValidationException` | 422 | Invalid request payload |
@@ -622,6 +622,18 @@ try {
     // bad API key
 } catch (EcourierException $e) {
     $e->getResponse()->status();
+}
+```
+
+Some errors carry a machine-readable code, so you can tell them apart without parsing the message. `getErrorCode()` returns it, or `null` when the error has none:
+
+```php
+use Ecourier\Exceptions\PaymentRequiredException;
+
+try {
+    $ecourier->documents()->sendJson(Channel::Peppol, $invoice);
+} catch (PaymentRequiredException $e) {
+    $e->getErrorCode(); // 'Billing.InsufficientBalance'
 }
 ```
 
@@ -975,8 +987,8 @@ Extends `WebhookEvent`. Returned by `WebhookEventFactory` for all `Document.*` e
 | Property | Type | Required |
 |---|---|---|
 | `$participant` | `ParticipantIdentifier` | Yes |
-| `$name` | `?string` | No |
-| `$simplifiedAddress` | `?SimplifiedAddressData` | No |
+| `$name` | `string` | Yes |
+| `$simplifiedAddress` | `SimplifiedAddressData` | Yes |
 | `$registrationNumber` | `?string` | No |
 | `$vatId` | `?string` | No |
 | `$contact` | `?InvoiceContactData` | No |
@@ -986,7 +998,7 @@ Extends `WebhookEvent`. Returned by `WebhookEventFactory` for all `Document.*` e
 | Property | Type | Required |
 |---|---|---|
 | `$code` | `PaymentMeansCode` | Yes |
-| `$account` | `?InvoicePaymentAccountData` | No |
+| `$account` | `InvoicePaymentAccountData` | Yes |
 | `$id` | `?int` | No |
 | `$remittanceText` | `?string` | No |
 
@@ -1005,6 +1017,8 @@ Extends `WebhookEvent`. Returned by `WebhookEventFactory` for all `Document.*` e
 | `$itemId` | `?string` | No |
 | `$sellersItemId` | `?string` | No |
 | `$buyersItemId` | `?string` | No |
+
+The line `$id` is sent to the API as a string.
 
 ---
 

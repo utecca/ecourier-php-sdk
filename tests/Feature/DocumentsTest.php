@@ -324,7 +324,7 @@ it('serializes invoice line fields from the api schema', function () {
     );
 
     expect($line->toArray())->toMatchArray([
-        'id' => 1,
+        'id' => '1',
         'name' => 'Consulting',
         'description' => 'Implementation work',
         'quantity' => '2',
@@ -363,19 +363,28 @@ it('requires a bank id for DK:BBAN accounts', function () {
     );
 })->throws(InvalidArgumentException::class, 'requires a bank ID');
 
-it('accepts payment means without an account', function () {
-    $means = new InvoicePaymentMeansData(code: PaymentMeansCode::CreditTransfer);
+it('sends the invoice line id as a string', function () {
+    $line = new InvoiceLineData(id: 1, name: 'Consulting');
 
-    expect($means->toArray())->toBe(['code' => '30']);
+    expect($line->toArray())->toBe(['id' => '1', 'name' => 'Consulting']);
 });
 
 it('omits optional invoice party fields when not set', function () {
     $party = new InvoicePartyData(
         participant: new ParticipantIdentifier(IdentifierScheme::DK_CVR, '12345678'),
+        name: 'Acme Danmark A/S',
+        simplifiedAddress: new SimplifiedAddressData('Vestergade 1', 'Copenhagen', '1456', 'DK'),
     );
 
     expect($party->toArray())->toBe([
         'participant' => ['scheme' => 'DK:CVR', 'id' => '12345678'],
+        'name' => 'Acme Danmark A/S',
+        'simplified_address' => [
+            'street_name' => 'Vestergade 1',
+            'city' => 'Copenhagen',
+            'postal_code' => '1456',
+            'country' => 'DK',
+        ],
     ]);
 });
 
