@@ -242,6 +242,24 @@ $payment = new InvoicePaymentData(
 
 The networks also restrict which codes an invoice may use. NemHandel invoices and Peppol invoices between two Danish companies cannot use code 30. On NemHandel, `remittanceText` can be at most 20 characters for `DK_BBAN` accounts. The API rejects these with a `ValidationException`.
 
+#### Credit notes
+
+Use `invoiceDocumentReferences` to name the invoices a credit note credits. Each reference is written to the document as a `BillingReference`, in the order given. A credit note can reference several invoices, and invoices can use the field too.
+
+```php
+use Ecourier\Data\Requests\Invoice\InvoiceDocumentReferenceData;
+use Ecourier\Enums\InvoiceDocumentType;
+
+$creditNote = new InvoiceDocumentData(
+    type: InvoiceDocumentType::CreditNote,
+    id: 'CN-2024-001',
+    // ...supplier, customer, lines and totals as for an invoice
+    invoiceDocumentReferences: [
+        new InvoiceDocumentReferenceData(id: 'INV-2024-001', issueDate: '2024-06-01'),
+    ],
+);
+```
+
 ### Send a document as raw XML
 
 If you need full control over the XML schema, send the raw UBL document directly. All routing headers are required.
@@ -981,6 +999,14 @@ Extends `WebhookEvent`. Returned by `WebhookEventFactory` for all `Document.*` e
 | `$dueDate` | `?string` | No |
 | `$orderReference` | `?string` | No |
 | `$payment` | `?InvoicePaymentData` | No |
+| `$invoiceDocumentReferences` | `?InvoiceDocumentReferenceData[]` | No |
+
+### `InvoiceDocumentReferenceData` (request payload)
+
+| Property | Type | Required |
+|---|---|---|
+| `$id` | `string` | Yes |
+| `$issueDate` | `?string` | No |
 
 ### `InvoicePartyData` (request payload)
 
@@ -1018,7 +1044,7 @@ Extends `WebhookEvent`. Returned by `WebhookEventFactory` for all `Document.*` e
 | `$sellersItemId` | `?string` | No |
 | `$buyersItemId` | `?string` | No |
 
-The line `$id` is sent to the API as a string.
+The line `$id` is sent to the API as a string. `$itemId` must be a GTIN (8, 12, 13 or 14 digits); put your own item numbers in `$sellersItemId`. `$sellersItemId` and `$buyersItemId` can be at most 100 characters.
 
 ---
 

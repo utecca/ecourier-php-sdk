@@ -9,7 +9,10 @@ use Ecourier\Enums\InvoiceDocumentType;
 
 readonly class InvoiceDocumentData
 {
-    /** @param InvoiceLineData[] $lines */
+    /**
+     * @param InvoiceLineData[] $lines
+     * @param InvoiceDocumentReferenceData[]|null $invoiceDocumentReferences Earlier invoices this document refers to. On a credit note: the invoices it credits.
+     */
     public function __construct(
         public InvoiceDocumentType $type,
         public string $id,
@@ -23,6 +26,7 @@ readonly class InvoiceDocumentData
         public ?string $dueDate = null,
         public ?string $orderReference = null,
         public ?InvoicePaymentData $payment = null,
+        public ?array $invoiceDocumentReferences = null,
     ) {}
 
     public function toArray(): array
@@ -48,6 +52,13 @@ readonly class InvoiceDocumentData
 
         if ($this->orderReference !== null) {
             $data['order_reference'] = $this->orderReference;
+        }
+
+        if ($this->invoiceDocumentReferences !== null) {
+            $data['invoice_document_references'] = array_map(
+                fn(InvoiceDocumentReferenceData $reference) => $reference->toArray(),
+                $this->invoiceDocumentReferences,
+            );
         }
 
         if ($this->payment !== null) {

@@ -6,6 +6,7 @@ use Ecourier\Data\Responses\DocumentData;
 use Ecourier\Data\Responses\DocumentListItemData;
 use Ecourier\Data\Requests\Invoice\InvoiceDocumentData;
 use Ecourier\Data\Requests\Invoice\InvoiceContactData;
+use Ecourier\Data\Requests\Invoice\InvoiceDocumentReferenceData;
 use Ecourier\Data\Requests\Invoice\InvoiceLineData;
 use Ecourier\Data\Requests\Invoice\InvoicePaymentAccountData;
 use Ecourier\Data\Requests\Invoice\InvoicePaymentData;
@@ -318,7 +319,7 @@ it('serializes invoice line fields from the api schema', function () {
             percent: '25.00',
             exemptionReason: 'Reverse charge',
         ),
-        itemId: 'item-1',
+        itemId: '4006381333931',
         sellersItemId: 'seller-1',
         buyersItemId: 'buyer-1',
     );
@@ -336,7 +337,7 @@ it('serializes invoice line fields from the api schema', function () {
             'percent' => '25.00',
             'exemption_reason' => 'Reverse charge',
         ],
-        'item_id' => 'item-1',
+        'item_id' => '4006381333931',
         'sellers_item_id' => 'seller-1',
         'buyers_item_id' => 'buyer-1',
     ]);
@@ -362,6 +363,34 @@ it('requires a bank id for DK:BBAN accounts', function () {
         account: new InvoicePaymentAccountData(id: '1234567890', scheme: AccountSchemeId::DK_BBAN),
     );
 })->throws(InvalidArgumentException::class, 'requires a bank ID');
+
+it('sends invoice document references', function () {
+    $base = minimalInvoice();
+
+    $creditNote = new InvoiceDocumentData(
+        type: InvoiceDocumentType::CreditNote,
+        id: 'CN-2024-001',
+        issueDate: $base->issueDate,
+        currency: $base->currency,
+        supplier: $base->supplier,
+        customer: $base->customer,
+        lines: $base->lines,
+        totals: $base->totals,
+        invoiceDocumentReferences: [
+            new InvoiceDocumentReferenceData(id: 'INV-2024-001', issueDate: '2024-05-01'),
+            new InvoiceDocumentReferenceData(id: 'INV-2024-002'),
+        ],
+    );
+
+    expect($creditNote->toArray()['invoice_document_references'])->toBe([
+        ['id' => 'INV-2024-001', 'issue_date' => '2024-05-01'],
+        ['id' => 'INV-2024-002'],
+    ]);
+});
+
+it('omits invoice document references when not set', function () {
+    expect(minimalInvoice()->toArray())->not->toHaveKey('invoice_document_references');
+});
 
 it('sends the invoice line id as a string', function () {
     $line = new InvoiceLineData(id: 1, name: 'Consulting');
