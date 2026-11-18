@@ -8,8 +8,8 @@ readonly class InvoicePartyData
 {
     public function __construct(
         public ParticipantIdentifier $participant,
-        public ?string $name = null,
-        public ?SimplifiedAddressData $simplifiedAddress = null,
+        public string $name,
+        public SimplifiedAddressData $simplifiedAddress,
         public ?string $registrationNumber = null,
         public ?string $vatId = null,
         public ?InvoiceContactData $contact = null,
@@ -17,20 +17,18 @@ readonly class InvoicePartyData
 
     public function toArray(): array
     {
-        $data = ['participant' => $this->participant->toArray()];
-
-        foreach ([
+        $data = [
+            'participant' => $this->participant->toArray(),
             'name' => $this->name,
-            'registration_number' => $this->registrationNumber,
-            'vat_id' => $this->vatId,
-        ] as $key => $value) {
-            if ($value !== null) {
-                $data[$key] = $value;
-            }
+            'simplified_address' => $this->simplifiedAddress->toArray(),
+        ];
+
+        if ($this->registrationNumber !== null) {
+            $data['registration_number'] = $this->registrationNumber;
         }
 
-        if ($this->simplifiedAddress !== null) {
-            $data['simplified_address'] = $this->simplifiedAddress->toArray();
+        if ($this->vatId !== null) {
+            $data['vat_id'] = $this->vatId;
         }
 
         if ($this->contact !== null) {

@@ -146,3 +146,52 @@ it('throws an ecourier exception for non-json error bodies', function () {
 
     $connector->companies()->get('comp_01abc');
 })->throws(EcourierException::class, 'Request failed with status 502.');
+
+it('exposes the api error code', function () {
+    $mockClient = new MockClient([
+        GetCompanyRequest::class => MockResponse::make(
+            body: json_encode([
+                'code' => 'Billing.InsufficientBalance',
+                'message' => 'Insufficient balance. Top up your balance to send documents.',
+            ]),
+            status: 402,
+            headers: ['Content-Type' => 'application/json'],
+        ),
+    ]);
+
+    $connector = new EcourierConnector(apiKey: 'pk_test_fake');
+    $connector->withMockClient($mockClient);
+
+    try {
+        $connector->companies()->get('comp_01abc');
+    } catch (PaymentRequiredException $e) {
+        expect($e->getErrorCode())->toBe('Billing.InsufficientBalance');
+
+        return;
+    }
+
+    $this->fail('Expected a PaymentRequiredException.');
+});
+
+it('has no error code when the api gives none', function () {
+    $mockClient = new MockClient([
+        GetCompanyRequest::class => MockResponse::make(
+            body: '<html><body>502 Bad Gateway</body></html>',
+            status: 502,
+            headers: ['Content-Type' => 'text/html'],
+        ),
+    ]);
+
+    $connector = new EcourierConnector(apiKey: 'pk_test_fake');
+    $connector->withMockClient($mockClient);
+
+    try {
+        $connector->companies()->get('comp_01abc');
+    } catch (EcourierException $e) {
+        expect($e->getErrorCode())->toBeNull();
+
+        return;
+    }
+
+    $this->fail('Expected an EcourierException.');
+});

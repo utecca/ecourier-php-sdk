@@ -9,22 +9,17 @@ use Ecourier\Enums\PaymentMeansCode;
 use InvalidArgumentException;
 
 /**
- * The account is optional. When given, its scheme and whether a bank ID is required
- * depend on the payment means code — see {@see PaymentMeansCode::accountSchemes()}
- * and {@see PaymentMeansCode::requiresBankId()}.
+ * The account's scheme and whether a bank ID is required depend on the payment means code —
+ * see {@see PaymentMeansCode::accountSchemes()} and {@see PaymentMeansCode::requiresBankId()}.
  */
 readonly class InvoicePaymentMeansData
 {
     public function __construct(
         public PaymentMeansCode $code,
-        public ?InvoicePaymentAccountData $account = null,
+        public InvoicePaymentAccountData $account,
         public ?int $id = null,
         public ?string $remittanceText = null,
     ) {
-        if ($account === null) {
-            return;
-        }
-
         if (! in_array($account->scheme, $code->accountSchemes(), true)) {
             $schemes = implode(' or ', array_map(fn(AccountSchemeId $scheme) => $scheme->value, $code->accountSchemes()));
 
@@ -48,9 +43,7 @@ readonly class InvoicePaymentMeansData
             $data['remittance_text'] = $this->remittanceText;
         }
 
-        if ($this->account !== null) {
-            $data['account'] = $this->account->toArray();
-        }
+        $data['account'] = $this->account->toArray();
 
         return $data;
     }

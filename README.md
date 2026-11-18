@@ -207,7 +207,7 @@ echo $document->id; // 01kmkdaf55vrrecfy70180tpr6
 
 #### Payment means
 
-The account is optional, but when you give one, the code decides which account scheme is allowed. The SDK checks this when you build `InvoicePaymentMeansData` and throws `InvalidArgumentException` otherwise.
+Every payment means needs an account, and the code decides which account scheme is allowed. The SDK checks this when you build `InvoicePaymentMeansData` and throws `InvalidArgumentException` otherwise.
 
 | Code | Account scheme | `bankId` |
 |---|---|---|
@@ -241,6 +241,24 @@ $payment = new InvoicePaymentData(
 ```
 
 The networks also restrict which codes an invoice may use. NemHandel invoices and Peppol invoices between two Danish companies cannot use code 30. On NemHandel, `remittanceText` can be at most 20 characters for `DK_BBAN` accounts. The API rejects these with a `ValidationException`.
+
+#### Credit notes
+
+Use `invoiceDocumentReferences` to name the invoices a credit note credits. Each reference is written to the document as a `BillingReference`, in the order given. A credit note can reference several invoices, and invoices can use the field too.
+
+```php
+use Ecourier\Data\Requests\Invoice\InvoiceDocumentReferenceData;
+use Ecourier\Enums\InvoiceDocumentType;
+
+$creditNote = new InvoiceDocumentData(
+    type: InvoiceDocumentType::CreditNote,
+    id: 'CN-2024-001',
+    // ...supplier, customer, lines and totals as for an invoice
+    invoiceDocumentReferences: [
+        new InvoiceDocumentReferenceData(id: 'INV-2024-001', issueDate: '2024-06-01'),
+    ],
+);
+```
 
 ### Send a document as raw XML
 
@@ -595,7 +613,7 @@ The SDK throws typed exceptions for every error case — no checking status code
 | `BadRequestException` | 400 | Malformed request, e.g. invalid JSON |
 | `AuthenticationException` | 401 | Invalid or missing API key |
 | `PaymentRequiredException` | 402 | Insufficient balance to send the document |
-| `ForbiddenException` | 403 | The API key is not allowed to do this |
+| `ForbiddenException` | 403 | The API key is not allowed to do this, or the team is suspended from live mode |
 | `NotFoundException` | 404 | Resource does not exist |
 | `GoneException` | 410 | The document content has expired |
 | `ValidationException` | 422 | Invalid request payload |
@@ -622,6 +640,18 @@ try {
     // bad API key
 } catch (EcourierException $e) {
     $e->getResponse()->status();
+}
+```
+
+Some errors carry a machine-readable code, so you can tell them apart without parsing the message. `getErrorCode()` returns it, or `null` when the error has none:
+
+```php
+use Ecourier\Exceptions\PaymentRequiredException;
+
+try {
+    $ecourier->documents()->sendJson(Channel::Peppol, $invoice);
+} catch (PaymentRequiredException $e) {
+    $e->getErrorCode(); // 'Billing.InsufficientBalance'
 }
 ```
 
@@ -969,14 +999,22 @@ Extends `WebhookEvent`. Returned by `WebhookEventFactory` for all `Document.*` e
 | `$dueDate` | `?string` | No |
 | `$orderReference` | `?string` | No |
 | `$payment` | `?InvoicePaymentData` | No |
+| `$invoiceDocumentReferences` | `?InvoiceDocumentReferenceData[]` | No |
+
+### `InvoiceDocumentReferenceData` (request payload)
+
+| Property | Type | Required |
+|---|---|---|
+| `$id` | `string` | Yes |
+| `$issueDate` | `?string` | No |
 
 ### `InvoicePartyData` (request payload)
 
 | Property | Type | Required |
 |---|---|---|
 | `$participant` | `ParticipantIdentifier` | Yes |
-| `$name` | `?string` | No |
-| `$simplifiedAddress` | `?SimplifiedAddressData` | No |
+| `$name` | `string` | Yes |
+| `$simplifiedAddress` | `SimplifiedAddressData` | Yes |
 | `$registrationNumber` | `?string` | No |
 | `$vatId` | `?string` | No |
 | `$contact` | `?InvoiceContactData` | No |
@@ -986,7 +1024,7 @@ Extends `WebhookEvent`. Returned by `WebhookEventFactory` for all `Document.*` e
 | Property | Type | Required |
 |---|---|---|
 | `$code` | `PaymentMeansCode` | Yes |
-| `$account` | `?InvoicePaymentAccountData` | No |
+| `$account` | `InvoicePaymentAccountData` | Yes |
 | `$id` | `?int` | No |
 | `$remittanceText` | `?string` | No |
 
@@ -1005,6 +1043,8 @@ Extends `WebhookEvent`. Returned by `WebhookEventFactory` for all `Document.*` e
 | `$itemId` | `?string` | No |
 | `$sellersItemId` | `?string` | No |
 | `$buyersItemId` | `?string` | No |
+
+The line `$id` is sent to the API as a string. `$itemId` must be a GTIN (8, 12, 13 or 14 digits); put your own item numbers in `$sellersItemId`. `$sellersItemId` and `$buyersItemId` can be at most 100 characters.
 
 ---
 

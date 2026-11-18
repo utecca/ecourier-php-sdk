@@ -22,7 +22,7 @@ readonly class InvoiceLineData
 
     public function toArray(): array
     {
-        $data = ['id' => $this->id, 'name' => $this->name];
+        $data = ['id' => (string) $this->id, 'name' => $this->name];
 
         foreach ([
             'description' => $this->description,
