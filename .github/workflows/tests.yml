@@ -14,6 +14,10 @@ jobs:
       fail-fast: false
       matrix:
         php: [8.3, 8.4, 8.5, 8.6]
+        include:
+          # Some dev dependencies don't declare PHP 8.6 support yet.
+          - php: 8.6
+            composer-flags: --ignore-platform-req=php+
 
     name: PHP ${{ matrix.php }}
 
@@ -27,7 +31,7 @@ jobs:
           coverage: none
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+        run: composer install --prefer-dist --no-progress ${{ matrix.composer-flags }}
 
       - name: Check code style
         run: vendor/bin/pint --test
