@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Requests\Invoice;
 
-readonly class InvoicePaymentData
+final readonly class InvoicePaymentData
 {
     /** @param InvoicePaymentMeansData[]|null $paymentMeans */
     public function __construct(

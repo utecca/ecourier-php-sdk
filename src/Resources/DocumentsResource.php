@@ -31,7 +31,7 @@ class DocumentsResource extends BaseResource
         Channel|array|null $channel = null,
         string|array|null $companyId = null,
         Direction|array|null $direction = null,
-        int $perPage = 10,
+        int $perPage = 25,
     ): DocumentsPaginator {
         $request = new GetDocumentsRequest(
             status: $status,

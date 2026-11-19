@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Requests\Invoice;
 
-readonly class InvoiceDocumentReferenceData
+final readonly class InvoiceDocumentReferenceData
 {
     /**
      * @param string $id Number of the earlier invoice, at most 100 characters.

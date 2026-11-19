@@ -20,7 +20,7 @@ class GetCompaniesRequest extends Request implements Paginatable
         private readonly string|array|null $country = null,
         private readonly string|array|null $name = null,
         private readonly ?bool $signed = null,
-        private readonly int $perPage = 10,
+        private readonly int $perPage = 25,
     ) {}
 
     public function resolveEndpoint(): string

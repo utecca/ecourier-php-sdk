@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Requests\Invoice;
 
-readonly class InvoiceLineData
+final readonly class InvoiceLineData
 {
     public function __construct(
         public int $id,

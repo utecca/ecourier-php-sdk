@@ -49,7 +49,6 @@ class EcourierConnector extends Connector
     protected function defaultHeaders(): array
     {
         return [
-            'Accept' => 'application/json',
             'User-Agent' => $this->userAgent(),
         ];
     }

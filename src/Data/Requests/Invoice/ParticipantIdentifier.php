@@ -6,7 +6,7 @@ namespace Ecourier\Data\Requests\Invoice;
 
 use Ecourier\Enums\IdentifierScheme;
 
-readonly class ParticipantIdentifier
+final readonly class ParticipantIdentifier
 {
     public function __construct(
         public IdentifierScheme $scheme,

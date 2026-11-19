@@ -6,7 +6,7 @@ namespace Ecourier\Data\Requests;
 
 use Ecourier\Data\Responses\CompanyAuthorisationSignerData;
 
-readonly class CreateCompanyData
+final readonly class CreateCompanyData
 {
     /**
      * The signer may only be omitted by teams that submit their own signed authorisation PDF.

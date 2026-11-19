@@ -6,7 +6,7 @@ namespace Ecourier\Data\Requests\Invoice;
 
 use Ecourier\Enums\AccountSchemeId;
 
-readonly class InvoicePaymentAccountData
+final readonly class InvoicePaymentAccountData
 {
     public function __construct(
         public string $id,

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Requests\Invoice;
 
-readonly class InvoiceTotalsData
+final readonly class InvoiceTotalsData
 {
     public function __construct(
         public string $subtotalAmount,

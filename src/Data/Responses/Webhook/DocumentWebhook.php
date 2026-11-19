@@ -27,21 +27,14 @@ final readonly class DocumentWebhook extends WebhookEvent
     public static function fromArray(array $data): static
     {
         return new self(
-            eventId: $data['event_id'],
-            event: WebhookEventType::from($data['event']),
-            occurredAt: new DateTimeImmutable($data['occurred_at']),
-            version: (int) $data['version'],
-            teamId: $data['team_id'],
-            mode: Mode::from($data['mode']),
-            companyId: $data['company_id'],
-            document: DocumentData::fromArray($data['payload']['document']),
+            eventId: self::required($data, 'event_id'),
+            event: WebhookEventType::from(self::required($data, 'event')),
+            occurredAt: self::date($data, 'occurred_at'),
+            version: (int) self::required($data, 'version'),
+            teamId: self::required($data, 'team_id'),
+            mode: self::requiredEnum($data, 'mode', Mode::class),
+            companyId: self::optional($data, 'company_id'),
+            document: DocumentData::fromArray(self::required(self::required($data, 'payload'), 'document')),
         );
-    }
-
-    protected function payloadToArray(): array
-    {
-        return [
-            'document' => $this->document->toArray(),
-        ];
     }
 }

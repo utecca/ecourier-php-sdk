@@ -18,6 +18,8 @@ composer require ecourier/ecourier
 
 **Requirements:** PHP 8.3+
 
+Upgrading from v1? Read [UPGRADE.md](UPGRADE.md).
+
 ---
 
 ## Getting Started
@@ -33,8 +35,6 @@ $ecourier = new EcourierConnector(apiKey: 'pk_test_your_key_here');
 // Production
 $ecourier = new EcourierConnector(apiKey: 'pk_live_your_key_here');
 ```
-
-All requests are authenticated automatically via `Authorization: Bearer` — you never touch headers yourself.
 
 ---
 
@@ -64,8 +64,11 @@ $companies = $ecourier->companies()
         country: 'DK',
         signed: false,
         perPage: 50,
-    )
-    ->collect();
+    );
+
+foreach ($companies->items() as $company) {
+    echo $company->name;
+}
 ```
 
 ### Get a company
@@ -75,7 +78,7 @@ $company = $ecourier->companies()->find('comp_01abc');
 
 echo $company->name;      // Acme Danmark A/S
 echo $company->companyNo; // 12345678
-echo $company->mode;      // Mode::Live
+$company->mode;           // Mode::Live
 ```
 
 `find()` returns a typed `CompanyData` DTO. If you need the raw `Response` object instead, use `get()`:
@@ -107,8 +110,8 @@ $company = $ecourier->companies()->create(new CreateCompanyData(
     redirectUrl: 'https://example.com/onboarding/authorisation-complete',
 ));
 
-$company->authorisation->signUrl;     // Send the signer here to sign
-$company->authorisation->redirectUrl; // 'https://example.com/onboarding/authorisation-complete'
+$company->authorisation?->signUrl;     // Send the signer here to sign
+$company->authorisation?->redirectUrl; // 'https://example.com/onboarding/authorisation-complete'
 ```
 
 ### Submit a signed authorisation PDF
@@ -155,11 +158,13 @@ $response->status(); // 204
 
 ## Documents
 
-Documents are the core of eCourier — they represent invoices and credit notes moving through the network.
+Documents are the core of eCourier — they represent invoices, credit notes and other documents moving through the network.
 
 ### Send a document as JSON
 
 Build a typed `InvoiceDocumentData` payload and submit it to a specific channel. eCourier converts it to the correct XML schema automatically.
+
+> **Note:** This method can only be used for invoices and credit notes.
 
 ```php
 use Ecourier\Data\Requests\Invoice\InvoiceDocumentData;
@@ -205,6 +210,8 @@ echo $document->id; // 01kmkdaf55vrrecfy70180tpr6
 
 > **Note:** `sendJson()` returns the accepted document ID. Use webhooks or poll `find()` to track delivery.
 
+On `InvoiceLineData`, `$itemId` must be a GTIN (8, 12, 13 or 14 digits); put your own item numbers in `$sellersItemId`. `$sellersItemId` and `$buyersItemId` can be at most 100 characters.
+
 #### Payment means
 
 Every payment means needs an account, and the code decides which account scheme is allowed. The SDK checks this when you build `InvoicePaymentMeansData` and throws `InvalidArgumentException` otherwise.
@@ -244,7 +251,7 @@ The networks also restrict which codes an invoice may use. NemHandel invoices an
 
 #### Credit notes
 
-Use `invoiceDocumentReferences` to name the invoices a credit note credits. Each reference is written to the document as a `BillingReference`, in the order given. A credit note can reference several invoices, and invoices can use the field too.
+Use `invoiceDocumentReferences` to name the invoices a credit note credits. A credit note can reference several invoices, and invoices can use the field too.
 
 ```php
 use Ecourier\Data\Requests\Invoice\InvoiceDocumentReferenceData;
@@ -262,7 +269,7 @@ $creditNote = new InvoiceDocumentData(
 
 ### Send a document as raw XML
 
-If you need full control over the XML schema, send the raw UBL document directly. All routing headers are required.
+Send a UBL document you have built yourself. Use this when you need full control over the XML, or for document types `sendJson()` doesn't support.
 
 ```php
 use Ecourier\Enums\Channel;
@@ -306,7 +313,7 @@ $document->type;             // DocumentType::Invoice
 $document->submissionFormat; // SubmissionFormat::JSON
 $document->sender->scheme;        // IdentifierScheme::DK_CVR
 $document->recipient->identifier; // '5790000123456'
-$document->company->name;    // 'Acme Danmark A/S'
+$document->company?->name;   // 'Acme Danmark A/S'
 
 // Validation errors and warnings found for the document
 if ($document->validation->hasErrors()) {
@@ -356,7 +363,7 @@ For received documents, mark them as delivered once your application has finishe
 ```php
 $document = $ecourier->documents()->markDelivered('doc_01xyz');
 
-echo $document->status; // DocumentStatus::Delivered
+$document->status; // DocumentStatus::Delivered
 ```
 
 ---
@@ -377,8 +384,11 @@ $participants = $ecourier->participants()
         scheme: IdentifierScheme::GLN,
         channel: Channel::NemHandel,
         perPage: 50,
-    )
-    ->collect();
+    );
+
+foreach ($participants->items() as $participant) {
+    echo $participant->fullIdentifier;
+}
 ```
 
 ### Get a participant
@@ -388,7 +398,7 @@ $participant = $ecourier->participants()->find('0101knwp96k3ggvkra831yrd77ghi');
 
 echo $participant->company->name;   // Acme Danmark A/S
 echo $participant->fullIdentifier;  // 0088:5790000435944
-echo $participant->mode;            // Mode::Live
+$participant->mode;                 // Mode::Live
 ```
 
 `find()` returns a typed `ParticipantData` DTO. If you need the raw `Response` object instead, use `get()`:
@@ -463,6 +473,21 @@ echo $participant->mode->value; // Live
 echo $participant->orgNo;      // 9999796418186
 ```
 
+### Identifier schemes
+
+`IdentifierScheme::icd()` returns the ISO 6523 ICD code, which Peppol uses as the identifier `schemeID`, and `fromIcd()`/`tryFromIcd()` convert it back. `Channel::supportedSchemes()` returns the identifier schemes the network can route to:
+
+```php
+use Ecourier\Enums\Channel;
+use Ecourier\Enums\IdentifierScheme;
+
+IdentifierScheme::DK_CVR->icd(); // '0184'
+IdentifierScheme::fromIcd('0184'); // IdentifierScheme::DK_CVR
+IdentifierScheme::tryFromIcd('0000'); // null
+
+in_array(IdentifierScheme::NO_ORG, Channel::NemHandel->supportedSchemes(), true); // false
+```
+
 ---
 
 ## Webhooks
@@ -482,9 +507,9 @@ if (! WebhookSignature::verify($body, $request->header(WebhookSignature::HEADER)
 $event = WebhookEventFactory::fromRequestBody($body);
 ```
 
-Every webhook is signed with your webhook secret: the `Signature` header holds the HMAC-SHA256 hex digest of the raw request body. Always verify it against the body exactly as received, before decoding it.
+Always verify the signature against the body exactly as received, before decoding it.
 
-Without a framework request object, `verifyCurrentRequest()` reads the raw body from `php://input` and the `Signature` header from `$_SERVER` for you:
+Without a framework request object, `verifyCurrentRequest()` reads the current request for you:
 
 ```php
 if (! WebhookSignature::verifyCurrentRequest($webhookSecret)) {
@@ -506,11 +531,11 @@ use Ecourier\Data\Responses\Webhook\DocumentWebhook;
 use Ecourier\Enums\WebhookEventType;
 
 if ($event instanceof DocumentWebhook) {
-    echo $event->event;                 // WebhookEventType::DocumentSendDelivered
+    $event->event;                      // WebhookEventType::DocumentSendDelivered
     echo $event->eventId;               // evt_01hxyz
     echo $event->occurredAt->format(DATE_ATOM);
     echo $event->document->id;          // 01kmkdaf55vrrecfy70180tpr6
-    echo $event->document->status->value; // Delivered
+    echo $event->document->status?->value; // Delivered
 }
 
 if ($event->event === WebhookEventType::DocumentReceiveCreated) {
@@ -526,11 +551,13 @@ An unknown `event` value throws `InvalidArgumentException`; malformed JSON throw
 
 ## Pagination
 
-`list()` returns a `DocumentsPaginator` — a lazy iterator built on Saloon's `PagedPaginator`. Pages are fetched from the API on demand, one at a time, as you consume items.
+Every `list()` method fetches 25 items per page unless you pass `perPage`. The API allows up to 100.
+
+Each `list()` returns a lazy paginator (`DocumentsPaginator`, `CompaniesPaginator` or `ParticipantsPaginator`) that fetches pages as you consume items.
 
 ### Iterating all pages
 
-The simplest approach. Each page is fetched automatically when the previous one is exhausted:
+`items()` is typed for static analysis: PHPStan and Psalm know `documents()->list()->items()` yields `DocumentListItemData`, `companies()->list()->items()` yields `CompanyListItemData` and `participants()->list()->items()` yields `ParticipantData`.
 
 ```php
 foreach ($ecourier->documents()->list()->items() as $document) {
@@ -540,7 +567,7 @@ foreach ($ecourier->documents()->list()->items() as $document) {
 
 ### LazyCollection
 
-If you're in a Laravel application, `collect()` wraps the paginator in a `LazyCollection`, giving you the full collection API without loading everything into memory:
+`collect()` wraps the paginator in a `LazyCollection`, giving you the full collection API without loading everything into memory. It needs `illuminate/collections`, which every Laravel application already has; outside Laravel, install it with `composer require illuminate/collections` or use `items()`.
 
 ```php
 $ecourier->documents()->list(perPage: 50)
@@ -564,8 +591,7 @@ Use `setMaxPages(1)` to stop after a single page. Exactly one HTTP request is ma
 $documents = $ecourier->documents()
     ->list(perPage: 25)
     ->setMaxPages(1)
-    ->collect()
-    ->all();
+    ->items();
 ```
 
 ### A specific page
@@ -577,29 +603,29 @@ $documents = $ecourier->documents()
     ->list(perPage: 25)
     ->setStartPage(3)
     ->setMaxPages(1)
-    ->collect()
-    ->all();
+    ->items();
 ```
 
 ### Filtering
 
-All filters are applied at the API level — only matching documents are returned:
+Only matching documents are returned:
 
 ```php
 use Ecourier\Enums\DocumentStatus;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Direction;
 
-$ecourier->documents()
-    ->list(
-        status:     DocumentStatus::Delivered,
-        channel:    Channel::Peppol,
-        companyId:  '0101knwp96k3ggvkra831yrd74zh',
-        direction:  Direction::Send,
-        perPage:    50,
-    )
-    ->collect()
-    ->each(fn ($doc) => ...);
+$documents = $ecourier->documents()->list(
+    status:    DocumentStatus::Delivered,
+    channel:   Channel::Peppol,
+    companyId: '0101knwp96k3ggvkra831yrd74zh',
+    direction: Direction::Send,
+    perPage:   50,
+);
+
+foreach ($documents->items() as $document) {
+    // ...
+}
 ```
 
 ---
@@ -608,19 +634,19 @@ $ecourier->documents()
 
 The SDK throws typed exceptions for every error case — no checking status codes manually.
 
-| Exception | HTTP Status | When |
-|---|---|---|
-| `BadRequestException` | 400 | Malformed request, e.g. invalid JSON |
-| `AuthenticationException` | 401 | Invalid or missing API key |
-| `PaymentRequiredException` | 402 | Insufficient balance to send the document |
-| `ForbiddenException` | 403 | The API key is not allowed to do this, or the team is suspended from live mode |
-| `NotFoundException` | 404 | Resource does not exist |
-| `GoneException` | 410 | The document content has expired |
-| `ValidationException` | 422 | Invalid request payload |
-| `FailedDependencyException` | 424 | An upstream registry or network lookup failed |
-| `EcourierException` | 5xx / other | Unexpected server errors, including non-JSON responses such as a proxy's 502 page |
+| Exception | When |
+|---|---|
+| `BadRequestException` | Malformed request, e.g. invalid JSON |
+| `AuthenticationException` | Invalid or missing API key |
+| `PaymentRequiredException` | Insufficient balance to send the document |
+| `ForbiddenException` | The API key is not allowed to do this, or the team is suspended from live mode |
+| `NotFoundException` | Resource does not exist |
+| `GoneException` | The document content has expired |
+| `ValidationException` | Invalid request payload |
+| `FailedDependencyException` | An upstream registry or network lookup failed |
+| `EcourierException` | Any other error, such as a server error or a non-JSON response like a proxy's 502 page |
 
-All exceptions extend `EcourierException`, so you can catch broadly or narrowly:
+All exceptions extend `EcourierException`, so you can catch broadly or narrowly, and `getResponse()` gives you the HTTP response, including its status code. The one exception is `MissingResponseFieldException`: the request succeeded, but the response is missing a field this version of the SDK requires. It extends `UnexpectedValueException` and has `$dataClass` and `$field` properties.
 
 ```php
 use Ecourier\Exceptions\AuthenticationException;
@@ -657,47 +683,13 @@ try {
 
 ---
 
-## Enums
-
-All typed fields use PHP backed enums, giving you IDE autocomplete and preventing invalid values at the type level.
-
-| Enum | Values |
-|---|---|
-| `DocumentStatus` | `Pending`, `Ready`, `Delivered`, `Failed` |
-| `DocumentType` | `Invoice`, `CreditNote`, `Reminder`, `ApplicationResponse`, `Order`, `OrderCancellation`, `OrderChange`, `OrderResponse`, `OrderResponseSimple`, `Other` |
-| `InvoiceDocumentType` | `Invoice`, `CreditNote` (the types `sendJson()` accepts) |
-| `Direction` | `Send`, `Receive` |
-| `Channel` | `Peppol`, `NemHandel` |
-| `Mode` | `Live`, `Test` |
-| `SubmissionFormat` | `XML`, `GOBL`, `JSON` |
-| `Currency` | `EUR`, `DKK`, `USD`, `GBP`, and 29 others (ISO 4217) |
-| `IdentifierScheme` | `DK_CVR`, `GLN`, `EU_VAT`, and 80+ others |
-| `TaxCategoryCode` | `S`, `AA`, `Z`, `E`, `AE`, `K`, `G`, `O`, `L`, `M` |
-| `PaymentMeansCode` | `CreditTransfer`, `DebitTransfer`, `PaymentToAccount` |
-| `AccountSchemeId` | `IBAN`, `DK_BBAN` |
-
-Enums serialize to their wire value automatically when used in requests. When the API returns an unrecognised value for an optional enum field, the SDK maps it to `null` rather than throwing.
-
-`IdentifierScheme::icd()` returns the ISO 6523 ICD code, which Peppol uses as the identifier `schemeID`, and `fromIcd()`/`tryFromIcd()` convert it back. `Channel::supportedSchemes()` returns the identifier schemes the network can route to:
-
-```php
-use Ecourier\Enums\Channel;
-use Ecourier\Enums\IdentifierScheme;
-
-IdentifierScheme::DK_CVR->icd(); // '0184'
-IdentifierScheme::fromIcd('0184'); // IdentifierScheme::DK_CVR
-IdentifierScheme::tryFromIcd('0000'); // null
-
-in_array(IdentifierScheme::NO_ORG, Channel::NemHandel->supportedSchemes(), true); // false
-```
-
----
-
 ## Testing & Mocking
 
 The SDK is built on Saloon, which ships with a first-class mock client. No HTTP requests are made in your tests.
 
 ### Mocking a response
+
+A mocked response must contain every field the data object requires, or parsing throws a `MissingResponseFieldException`. The easiest way is to save a real API response as a JSON fixture:
 
 ```php
 use Ecourier\EcourierConnector;
@@ -709,7 +701,7 @@ use Saloon\Http\Faking\MockResponse;
 
 $mockClient = new MockClient([
     GetDocumentRequest::class => MockResponse::make(
-        body: ['id' => 'doc_01xyz', 'status' => 'Delivered', 'direction' => 'Send'],
+        body: json_decode(file_get_contents(__DIR__ . '/fixtures/document.json'), true),
         status: 200,
     ),
 ]);
@@ -726,6 +718,8 @@ expect($document->direction)->toBe(Direction::Send);
 ### Asserting requests were sent
 
 ```php
+use Ecourier\Requests\Documents\SendDocumentAsJsonRequest;
+
 $mockClient->assertSent(GetDocumentRequest::class);
 $mockClient->assertNotSent(SendDocumentAsJsonRequest::class);
 $mockClient->assertSentCount(1);
@@ -751,308 +745,11 @@ $ecourier->companies()->find('comp_missing');
 
 ---
 
-## Data Objects
-
-All resources return typed DTOs with readonly properties.
-
-### `CompanyListItemData`
-
-| Property | Type |
-|---|---|
-| `$id` | `string` |
-| `$name` | `string` |
-| `$country` | `string` |
-| `$companyNo` | `string` |
-
-### `CompanyData`
-
-| Property | Type |
-|---|---|
-| `$id` | `string` |
-| `$name` | `string` |
-| `$mode` | `Mode` |
-| `$companyNo` | `string` |
-| `$createdAt` | `DateTimeImmutable` |
-| `$updatedAt` | `DateTimeImmutable` |
-| `$country` | `string` |
-| `$authorisation` | `?CompanyAuthorisationData` |
-| `$participants` | `CompanyParticipantData[]` |
-
-### `CreateCompanyData` (request payload)
-
-| Property | Type | Required |
-|---|---|---|
-| `$name` | `string` | Yes |
-| `$country` | `string` | Yes |
-| `$companyNo` | `string` | Yes |
-| `$signer` | `?CompanyAuthorisationSignerData` | Yes, unless your team submits its own signed authorisation PDF |
-| `$redirectUrl` | `?string` | No |
-
-### `UpdateCompanyData` (request payload)
-
-| Property | Type | Required |
-|---|---|---|
-| `$name` | `string` | Yes |
-
-### `CompanyAuthorisationData`
-
-| Property | Type |
-|---|---|
-| `$signed` | `bool` |
-| `$signUrl` | `?string` |
-| `$signer` | `CompanyAuthorisationSignerData` |
-| `$redirectUrl` | `?string` |
-
-### `SubmitAuthorisationPdfData` (request payload)
-
-| Property | Type | Required |
-|---|---|---|
-| `$pdf` | `string` | Yes — raw PDF file contents, not a file path |
-| `$signer` | `CompanyAuthorisationSignerData` | Yes |
-
-### `DocumentData`
-
-Shared by document endpoints (`find`, `markDelivered`) and the `document` payload of `DocumentWebhook`.
-
-| Property | Type |
-|---|---|
-| `$id` | `string` |
-| `$status` | `DocumentStatus` |
-| `$channel` | `Channel` |
-| `$mode` | `Mode` |
-| `$direction` | `Direction` |
-| `$type` | `DocumentType` |
-| `$submissionFormat` | `SubmissionFormat` |
-| `$sender` | `DocumentParticipantData` |
-| `$recipient` | `DocumentParticipantData` |
-| `$webUrl` | `string` |
-| `$createdAt` | `DateTimeImmutable` |
-| `$ubl` | `DocumentUblData` |
-| `$validation` | `DocumentValidationData` |
-| `$latestE2eMessageUuid` | `?string` |
-| `$latestE2eTransmissionId` | `?string` |
-| `$company` | `?DocumentCompanyData` |
-| `$transmittedAt` | `?DateTimeImmutable` |
-| `$attempts` | `DocumentAttemptData[]` |
-
-### `DocumentAttemptData`
-
-A single delivery attempt, oldest first. Empty for received documents.
-
-| Property | Type |
-|---|---|
-| `$status` | `DocumentAttemptStatus` |
-| `$errorMessage` | `?string` |
-| `$e2eMessageUuid` | `string` |
-| `$e2eTransmissionId` | `?string` |
-| `$createdAt` | `DateTimeImmutable` |
-
-### `DocumentListItemData`
-
-Returned by `documents()->list()`.
-
-| Property | Type |
-|---|---|
-| `$id` | `string` |
-| `$status` | `DocumentStatus` |
-| `$channel` | `Channel` |
-| `$direction` | `Direction` |
-| `$type` | `DocumentType` |
-| `$createdAt` | `DateTimeImmutable` |
-| `$company` | `?DocumentCompanyData` |
-
-### `DocumentParticipantData`
-
-| Property | Type |
-|---|---|
-| `$scheme` | `IdentifierScheme` |
-| `$identifier` | `string` |
-| `$schemeIcd` | `string` |
-| `$fullIdentifier` | `string` |
-
-### `DocumentUblData`
-
-| Property | Type |
-|---|---|
-| `$id` | `?string` |
-| `$uuid` | `?string` |
-| `$profileId` | `?string` |
-| `$customizationId` | `?string` |
-
-### `DocumentValidationData`
-
-| Property / Method | Type |
-|---|---|
-| `$errors` | `DocumentValidationIssueData[]` |
-| `$warnings` | `DocumentValidationIssueData[]` |
-| `hasErrors()` | `bool` |
-| `hasWarnings()` | `bool` |
-
-### `DocumentValidationIssueData`
-
-| Property | Type |
-|---|---|
-| `$message` | `string` |
-| `$code` | `?string` |
-| `$location` | `?string` — an XPath for schematron rules, or e.g. `Line 3` for XML schema errors |
-
-### `ParticipantData`
-
-| Property | Type |
-|---|---|
-| `$id` | `string` |
-| `$company` | `ParticipantCompanyData` |
-| `$capabilitySet` | `?ParticipantCapabilitySetData` |
-| `$mode` | `Mode` |
-| `$scheme` | `IdentifierScheme` |
-| `$identifier` | `string` |
-| `$schemeIcd` | `string` |
-| `$fullIdentifier` | `string` |
-| `$channels` | `Channel[]` |
-| `$createdAt` | `DateTimeImmutable` |
-| `$updatedAt` | `DateTimeImmutable` |
-
-### `ParticipantCompanyData`
-
-| Property | Type |
-|---|---|
-| `$id` | `string` |
-| `$name` | `string` |
-
-### `ParticipantCapabilitySetData`
-
-| Property | Type |
-|---|---|
-| `$id` | `string` |
-| `$name` | `string` |
-
-### `CreateParticipantData` (request payload)
-
-| Property | Type | Required |
-|---|---|---|
-| `$companyId` | `string` | Yes |
-| `$channels` | `Channel[]` | Yes |
-| `$scheme` | `IdentifierScheme` | Yes |
-| `$identifier` | `?string` | No — leave `null` for GLN |
-| `$capabilitySetId` | `?string` | No — omit or pass `null` to use the default capability set |
-
-### `UpdateParticipantData` (request payload)
-
-| Property | Type | Required |
-|---|---|---|
-| `$channels` | `?Channel[]` | No — omit to keep the current channels |
-| `$capabilitySetId` | `string\|Undefined\|null` | No — omit to keep the current capability set, or pass `null` to reset to the default |
-
-### `ParticipantLookupData`
-
-| Property | Type |
-|---|---|
-| `$channel` | `Channel` |
-| `$mode` | `Mode` |
-| `$entityName` | `string` |
-| `$country` | `?string` |
-| `$registrationDate` | `string` |
-| `$orgNo` | `string` |
-| `$registryUrl` | `string` |
-
-### `SendDocumentData`
-
-| Property | Type |
-|---|---|
-| `$id` | `string` |
-
-### `WebhookEvent` (abstract)
-
-Base fields shared by every webhook event DTO.
-
-| Property | Type |
-|---|---|
-| `$eventId` | `string` |
-| `$event` | `WebhookEventType` |
-| `$occurredAt` | `DateTimeImmutable` |
-| `$version` | `int` |
-| `$teamId` | `string` |
-| `$mode` | `Mode` |
-| `$companyId` | `?string` — `null` when the company has been deleted |
-
-### `DocumentWebhook`
-
-Extends `WebhookEvent`. Returned by `WebhookEventFactory` for all `Document.*` events.
-
-| Property | Type |
-|---|---|
-| `$document` | `DocumentData` |
-
-### `InvoiceDocumentData` (request payload)
-
-| Property | Type | Required |
-|---|---|---|
-| `$type` | `InvoiceDocumentType` | Yes |
-| `$id` | `string` | Yes |
-| `$issueDate` | `string` | Yes |
-| `$currency` | `Currency` | Yes |
-| `$supplier` | `InvoicePartyData` | Yes |
-| `$customer` | `InvoicePartyData` | Yes |
-| `$lines` | `InvoiceLineData[]` | Yes |
-| `$totals` | `InvoiceTotalsData` | Yes |
-| `$uuid` | `?string` | No |
-| `$dueDate` | `?string` | No |
-| `$orderReference` | `?string` | No |
-| `$payment` | `?InvoicePaymentData` | No |
-| `$invoiceDocumentReferences` | `?InvoiceDocumentReferenceData[]` | No |
-
-### `InvoiceDocumentReferenceData` (request payload)
-
-| Property | Type | Required |
-|---|---|---|
-| `$id` | `string` | Yes |
-| `$issueDate` | `?string` | No |
-
-### `InvoicePartyData` (request payload)
-
-| Property | Type | Required |
-|---|---|---|
-| `$participant` | `ParticipantIdentifier` | Yes |
-| `$name` | `string` | Yes |
-| `$simplifiedAddress` | `SimplifiedAddressData` | Yes |
-| `$registrationNumber` | `?string` | No |
-| `$vatId` | `?string` | No |
-| `$contact` | `?InvoiceContactData` | No |
-
-### `InvoicePaymentMeansData` (request payload)
-
-| Property | Type | Required |
-|---|---|---|
-| `$code` | `PaymentMeansCode` | Yes |
-| `$account` | `InvoicePaymentAccountData` | Yes |
-| `$id` | `?int` | No |
-| `$remittanceText` | `?string` | No |
-
-### `InvoiceLineData` (request payload)
-
-| Property | Type | Required |
-|---|---|---|
-| `$id` | `int` | Yes |
-| `$name` | `string` | Yes |
-| `$description` | `?string` | No |
-| `$quantity` | `?string` | No |
-| `$unitCode` | `?string` | No |
-| `$unitPrice` | `?string` | No |
-| `$lineTotal` | `?string` | No |
-| `$taxCategory` | `?InvoiceTaxCategoryData` | No |
-| `$itemId` | `?string` | No |
-| `$sellersItemId` | `?string` | No |
-| `$buyersItemId` | `?string` | No |
-
-The line `$id` is sent to the API as a string. `$itemId` must be a GTIN (8, 12, 13 or 14 digits); put your own item numbers in `$sellersItemId`. `$sellersItemId` and `$buyersItemId` can be at most 100 characters.
-
----
-
 ## Advanced Usage
 
 ### Accessing the raw Saloon response
 
-Every resource method has a companion that returns the raw `Saloon\Http\Response` instead of a DTO. Use `get()` instead of `find()`:
+Each `find()` has a companion, `get()`, that returns the raw `Saloon\Http\Response` instead of a DTO. `lookup()->get()` does the same for `findParticipant()`:
 
 ```php
 $response = $ecourier->companies()->get('comp_01abc');

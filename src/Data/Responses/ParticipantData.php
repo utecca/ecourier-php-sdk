@@ -5,58 +5,49 @@ declare(strict_types=1);
 namespace Ecourier\Data\Responses;
 
 use DateTimeImmutable;
+use Ecourier\Data\Responses\Concerns\ParsesResponseData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
 use Ecourier\Enums\Mode;
 
-readonly class ParticipantData
+final readonly class ParticipantData
 {
-    /** @param Channel[] $channels */
+    use ParsesResponseData;
+
+    /**
+     * @param Channel[] $channels
+     * @param string $webUrl Link to manage the participant in the eCourier portal. Participants have no page of their own, so it opens their company's participants tab.
+     */
     public function __construct(
         public string $id,
         public ParticipantCompanyData $company,
         public ?ParticipantCapabilitySetData $capabilitySet,
         public Mode $mode,
-        public IdentifierScheme $scheme,
+        public ?IdentifierScheme $scheme,
         public string $identifier,
         public string $schemeIcd,
         public string $fullIdentifier,
         public array $channels,
         public DateTimeImmutable $createdAt,
         public DateTimeImmutable $updatedAt,
+        public string $webUrl,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'],
-            company: ParticipantCompanyData::fromArray($data['company']),
+            id: self::required($data, 'id'),
+            company: ParticipantCompanyData::fromArray(self::required($data, 'company')),
             capabilitySet: isset($data['capability_set']) ? ParticipantCapabilitySetData::fromArray($data['capability_set']) : null,
-            mode: Mode::from($data['mode']),
-            scheme: IdentifierScheme::from($data['scheme']),
-            identifier: $data['identifier'],
-            schemeIcd: $data['scheme_icd'],
-            fullIdentifier: $data['full_identifier'],
-            channels: array_map(fn(string $channel) => Channel::from($channel), $data['channels']),
-            createdAt: new DateTimeImmutable($data['created_at']),
-            updatedAt: new DateTimeImmutable($data['updated_at']),
+            mode: self::requiredEnum($data, 'mode', Mode::class),
+            scheme: self::enum(IdentifierScheme::class, self::optional($data, 'scheme')),
+            identifier: self::required($data, 'identifier'),
+            schemeIcd: self::required($data, 'scheme_icd'),
+            fullIdentifier: self::required($data, 'full_identifier'),
+            channels: self::enumList($data, 'channels', Channel::class),
+            createdAt: self::date($data, 'created_at'),
+            updatedAt: self::date($data, 'updated_at'),
+            webUrl: self::required($data, 'web_url'),
         );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'company' => $this->company->toArray(),
-            'capability_set' => $this->capabilitySet?->toArray(),
-            'mode' => $this->mode->value,
-            'scheme' => $this->scheme->value,
-            'identifier' => $this->identifier,
-            'scheme_icd' => $this->schemeIcd,
-            'full_identifier' => $this->fullIdentifier,
-            'channels' => array_map(fn(Channel $channel) => $channel->value, $this->channels),
-            'created_at' => $this->createdAt->format('Y-m-d\TH:i:sP'),
-            'updated_at' => $this->updatedAt->format('Y-m-d\TH:i:sP'),
-        ];
     }
 }

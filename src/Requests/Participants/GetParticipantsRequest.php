@@ -19,7 +19,7 @@ class GetParticipantsRequest extends Request implements Paginatable
         private readonly string|array|null $companyId = null,
         private readonly IdentifierScheme|array|null $scheme = null,
         private readonly Channel|array|null $channel = null,
-        private readonly int $perPage = 10,
+        private readonly int $perPage = 25,
     ) {}
 
     public function resolveEndpoint(): string

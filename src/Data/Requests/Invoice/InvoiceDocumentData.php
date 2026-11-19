@@ -7,7 +7,7 @@ namespace Ecourier\Data\Requests\Invoice;
 use Ecourier\Enums\Currency;
 use Ecourier\Enums\InvoiceDocumentType;
 
-readonly class InvoiceDocumentData
+final readonly class InvoiceDocumentData
 {
     /**
      * @param InvoiceLineData[] $lines

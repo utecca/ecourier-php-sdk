@@ -24,7 +24,7 @@ class ParticipantsResource extends BaseResource
         string|array|null $companyId = null,
         IdentifierScheme|array|null $scheme = null,
         Channel|array|null $channel = null,
-        int $perPage = 10,
+        int $perPage = 25,
     ): ParticipantsPaginator {
         return new ParticipantsPaginator($this->connector, new GetParticipantsRequest(
             companyId: $companyId,

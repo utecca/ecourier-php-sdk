@@ -239,8 +239,16 @@ it('omits the filter key entirely when no filters are set', function () {
 it('only sends per_page when no filters are set', function () {
     $request = new GetDocumentsRequest();
 
-    expect($request->query()->all())->toBe(['per_page' => 10]);
+    expect($request->query()->all())->toBe(['per_page' => 25]);
 });
+
+it('lists 25 items per page by default', function (string $request) {
+    expect((new $request())->query()->all())->toBe(['per_page' => 25]);
+})->with([
+    Ecourier\Requests\Documents\GetDocumentsRequest::class,
+    Ecourier\Requests\Companies\GetCompaniesRequest::class,
+    Ecourier\Requests\Participants\GetParticipantsRequest::class,
+]);
 
 it('sends the locale as a query param when rendering', function () {
     $html = new GetDocumentHtmlRequest('doc_01xyz', Locale::DA);

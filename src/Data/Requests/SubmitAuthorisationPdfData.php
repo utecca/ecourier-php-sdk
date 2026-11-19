@@ -6,7 +6,7 @@ namespace Ecourier\Data\Requests;
 
 use Ecourier\Data\Responses\CompanyAuthorisationSignerData;
 
-readonly class SubmitAuthorisationPdfData
+final readonly class SubmitAuthorisationPdfData
 {
     /**
      * @param string $pdf Raw PDF file contents, not a file path.

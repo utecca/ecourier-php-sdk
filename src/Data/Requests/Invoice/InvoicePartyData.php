@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Requests\Invoice;
 
-readonly class InvoicePartyData
+final readonly class InvoicePartyData
 {
     public function __construct(
         public ParticipantIdentifier $participant,

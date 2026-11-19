@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Responses;
 
+use Ecourier\Data\Responses\Concerns\ParsesResponseData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
 
-readonly class CompanyParticipantData
+final readonly class CompanyParticipantData
 {
+    use ParsesResponseData;
+
     /** @param Channel[] $channels */
     public function __construct(
         public string $id,
-        public IdentifierScheme $scheme,
+        public ?IdentifierScheme $scheme,
         public string $identifier,
         public string $schemeIcd,
         public string $fullIdentifier,
@@ -22,24 +25,12 @@ readonly class CompanyParticipantData
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'],
-            scheme: IdentifierScheme::from($data['scheme']),
-            identifier: $data['identifier'],
-            schemeIcd: $data['scheme_icd'],
-            fullIdentifier: $data['full_identifier'],
-            channels: array_map(fn(string $channel) => Channel::from($channel), $data['channels']),
+            id: self::required($data, 'id'),
+            scheme: self::enum(IdentifierScheme::class, self::optional($data, 'scheme')),
+            identifier: self::required($data, 'identifier'),
+            schemeIcd: self::required($data, 'scheme_icd'),
+            fullIdentifier: self::required($data, 'full_identifier'),
+            channels: self::enumList($data, 'channels', Channel::class),
         );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'scheme' => $this->scheme->value,
-            'identifier' => $this->identifier,
-            'scheme_icd' => $this->schemeIcd,
-            'full_identifier' => $this->fullIdentifier,
-            'channels' => array_map(fn(Channel $channel) => $channel->value, $this->channels),
-        ];
     }
 }

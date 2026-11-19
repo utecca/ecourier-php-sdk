@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Responses;
 
-readonly class CompanyAuthorisationData
+use Ecourier\Data\Responses\Concerns\ParsesResponseData;
+
+final readonly class CompanyAuthorisationData
 {
+    use ParsesResponseData;
+
     public function __construct(
         public bool $signed,
         public ?string $signUrl,
@@ -16,20 +20,10 @@ readonly class CompanyAuthorisationData
     public static function fromArray(array $data): self
     {
         return new self(
-            signed: $data['signed'],
-            signUrl: $data['sign_url'],
-            signer: CompanyAuthorisationSignerData::fromArray($data['signer']),
-            redirectUrl: $data['redirect_url'],
+            signed: (bool) self::required($data, 'signed'),
+            signUrl: self::optional($data, 'sign_url'),
+            signer: CompanyAuthorisationSignerData::fromArray(self::required($data, 'signer')),
+            redirectUrl: self::optional($data, 'redirect_url'),
         );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'signed' => $this->signed,
-            'sign_url' => $this->signUrl,
-            'signer' => $this->signer->toArray(),
-            'redirect_url' => $this->redirectUrl,
-        ];
     }
 }

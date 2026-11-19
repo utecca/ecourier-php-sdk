@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Responses;
 
-readonly class DocumentValidationIssueData
+use Ecourier\Data\Responses\Concerns\ParsesResponseData;
+
+final readonly class DocumentValidationIssueData
 {
+    use ParsesResponseData;
+
     public function __construct(
         public string $message,
         public ?string $code,
@@ -15,18 +19,9 @@ readonly class DocumentValidationIssueData
     public static function fromArray(array $data): self
     {
         return new self(
-            message: $data['message'],
-            code: $data['code'] ?? null,
-            location: $data['location'] ?? null,
+            message: self::required($data, 'message'),
+            code: self::optional($data, 'code'),
+            location: self::optional($data, 'location'),
         );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'code' => $this->code,
-            'message' => $this->message,
-            'location' => $this->location,
-        ];
     }
 }

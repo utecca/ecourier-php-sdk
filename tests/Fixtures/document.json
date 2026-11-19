@@ -25,6 +25,7 @@
         "name": "Acme Danmark A/S"
     },
     "dashboard_url": "https://app.ecourier.io/live/acme-danmark/documents/01kmkdaf55vrrecfy70180tpr6",
+    "web_url": "https://app.ecourier.io/live/acme-danmark/documents/01kmkdaf55vrrecfy70180tpr6",
     "created_at": "2024-06-01T10:00:00Z",
     "transmitted_at": "2024-06-01T10:05:00Z",
     "ubl": {

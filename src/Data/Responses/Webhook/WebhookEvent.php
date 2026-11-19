@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Ecourier\Data\Responses\Webhook;
 
 use DateTimeImmutable;
+use Ecourier\Data\Responses\Concerns\ParsesResponseData;
 use Ecourier\Enums\Mode;
 use Ecourier\Enums\WebhookEventType;
 
 abstract readonly class WebhookEvent
 {
+    use ParsesResponseData;
+
     public function __construct(
         public string $eventId,
         public WebhookEventType $event,
@@ -22,24 +25,8 @@ abstract readonly class WebhookEvent
 
     abstract public static function fromArray(array $data): static;
 
-    abstract protected function payloadToArray(): array;
-
     public static function fromRequestBody(string $body): static
     {
         return static::fromArray(json_decode($body, true, flags: JSON_THROW_ON_ERROR));
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'event_id' => $this->eventId,
-            'event' => $this->event->value,
-            'occurred_at' => $this->occurredAt->format('Y-m-d\TH:i:s\Z'),
-            'version' => $this->version,
-            'team_id' => $this->teamId,
-            'mode' => $this->mode->value,
-            'company_id' => $this->companyId,
-            'payload' => $this->payloadToArray(),
-        ];
     }
 }

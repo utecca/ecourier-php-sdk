@@ -4,7 +4,8 @@
             "id": "0101knwp96k3ggvkra831yrd74zh",
             "name": "Acme Danmark A/S",
             "country": "DK",
-            "company_no": "12345678"
+            "company_no": "12345678",
+            "web_url": "https://app.ecourier.io/live/acme-danmark/companies/0101knwp96k3ggvkra831yrd74zh"
         }
     ],
     "meta": {
