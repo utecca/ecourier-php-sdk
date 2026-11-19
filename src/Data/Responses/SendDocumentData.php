@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Responses;
 
-readonly class SendDocumentData
+use Ecourier\Data\Responses\Concerns\ParsesResponseData;
+
+final readonly class SendDocumentData
 {
+    use ParsesResponseData;
+
     public function __construct(
         public string $id,
     ) {}
@@ -13,14 +17,7 @@ readonly class SendDocumentData
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'],
+            id: self::required($data, 'id'),
         );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-        ];
     }
 }

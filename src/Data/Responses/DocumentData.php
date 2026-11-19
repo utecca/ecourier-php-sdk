@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ecourier\Data\Responses;
 
 use DateTimeImmutable;
+use Ecourier\Data\Responses\Concerns\ParsesResponseData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Direction;
 use Ecourier\Enums\DocumentStatus;
@@ -12,17 +13,22 @@ use Ecourier\Enums\DocumentType;
 use Ecourier\Enums\Mode;
 use Ecourier\Enums\SubmissionFormat;
 
-readonly class DocumentData
+final readonly class DocumentData
 {
-    /** @param DocumentAttemptData[] $attempts */
+    use ParsesResponseData;
+
+    /**
+     * @param string $webUrl Link to the document in the eCourier portal.
+     * @param DocumentAttemptData[] $attempts
+     */
     public function __construct(
         public string $id,
-        public DocumentStatus $status,
+        public ?DocumentStatus $status,
         public Channel $channel,
         public Mode $mode,
         public Direction $direction,
-        public DocumentType $type,
-        public SubmissionFormat $submissionFormat,
+        public ?DocumentType $type,
+        public ?SubmissionFormat $submissionFormat,
         public DocumentParticipantData $sender,
         public DocumentParticipantData $recipient,
         public string $webUrl,
@@ -39,48 +45,24 @@ readonly class DocumentData
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'],
-            status: DocumentStatus::from($data['status']),
-            channel: Channel::from($data['channel']),
-            mode: Mode::from($data['mode']),
-            direction: Direction::from($data['direction']),
-            type: DocumentType::from($data['type']),
-            submissionFormat: SubmissionFormat::from($data['submission_format']),
-            sender: DocumentParticipantData::fromArray($data['sender']),
-            recipient: DocumentParticipantData::fromArray($data['recipient']),
-            webUrl: $data['dashboard_url'],
-            createdAt: new DateTimeImmutable($data['created_at']),
-            ubl: DocumentUblData::fromArray($data['ubl']),
-            validation: DocumentValidationData::fromArray($data['validation']),
-            attempts: array_map(fn(array $attempt) => DocumentAttemptData::fromArray($attempt), $data['attempts'] ?? []),
-            latestE2eMessageUuid: $data['latest_e2e_message_uuid'] ?? null,
-            latestE2eTransmissionId: $data['latest_e2e_transmission_id'] ?? null,
+            id: self::required($data, 'id'),
+            status: self::enum(DocumentStatus::class, self::optional($data, 'status')),
+            channel: self::requiredEnum($data, 'channel', Channel::class),
+            mode: self::requiredEnum($data, 'mode', Mode::class),
+            direction: self::requiredEnum($data, 'direction', Direction::class),
+            type: self::enum(DocumentType::class, self::optional($data, 'type')),
+            submissionFormat: self::enum(SubmissionFormat::class, self::optional($data, 'submission_format')),
+            sender: DocumentParticipantData::fromArray(self::required($data, 'sender')),
+            recipient: DocumentParticipantData::fromArray(self::required($data, 'recipient')),
+            webUrl: self::required($data, 'web_url'),
+            createdAt: self::date($data, 'created_at'),
+            ubl: DocumentUblData::fromArray(self::required($data, 'ubl')),
+            validation: DocumentValidationData::fromArray(self::required($data, 'validation')),
+            attempts: array_map(fn(array $attempt) => DocumentAttemptData::fromArray($attempt), self::list($data, 'attempts')),
+            latestE2eMessageUuid: self::optional($data, 'latest_e2e_message_uuid'),
+            latestE2eTransmissionId: self::optional($data, 'latest_e2e_transmission_id'),
             company: isset($data['company']) ? DocumentCompanyData::fromArray($data['company']) : null,
-            transmittedAt: isset($data['transmitted_at']) ? new DateTimeImmutable($data['transmitted_at']) : null,
+            transmittedAt: self::optionalDate($data, 'transmitted_at'),
         );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'status' => $this->status->value,
-            'channel' => $this->channel->value,
-            'mode' => $this->mode->value,
-            'direction' => $this->direction->value,
-            'type' => $this->type->value,
-            'submission_format' => $this->submissionFormat->value,
-            'sender' => $this->sender->toArray(),
-            'recipient' => $this->recipient->toArray(),
-            'latest_e2e_message_uuid' => $this->latestE2eMessageUuid,
-            'latest_e2e_transmission_id' => $this->latestE2eTransmissionId,
-            'company' => $this->company?->toArray(),
-            'dashboard_url' => $this->webUrl,
-            'created_at' => $this->createdAt->format('Y-m-d\TH:i:s\Z'),
-            'transmitted_at' => $this->transmittedAt?->format('Y-m-d\TH:i:s\Z'),
-            'ubl' => $this->ubl->toArray(),
-            'validation' => $this->validation->toArray(),
-            'attempts' => array_map(fn(DocumentAttemptData $attempt) => $attempt->toArray(), $this->attempts),
-        ];
     }
 }

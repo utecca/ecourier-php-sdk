@@ -12,7 +12,7 @@ use InvalidArgumentException;
  * The account's scheme and whether a bank ID is required depend on the payment means code —
  * see {@see PaymentMeansCode::accountSchemes()} and {@see PaymentMeansCode::requiresBankId()}.
  */
-readonly class InvoicePaymentMeansData
+final readonly class InvoicePaymentMeansData
 {
     public function __construct(
         public PaymentMeansCode $code,

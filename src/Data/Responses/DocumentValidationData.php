@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Responses;
 
-readonly class DocumentValidationData
+use Ecourier\Data\Responses\Concerns\ParsesResponseData;
+
+final readonly class DocumentValidationData
 {
+    use ParsesResponseData;
+
     /**
      * @param DocumentValidationIssueData[] $errors
      * @param DocumentValidationIssueData[] $warnings
@@ -18,8 +22,8 @@ readonly class DocumentValidationData
     public static function fromArray(array $data): self
     {
         return new self(
-            errors: array_map(fn(array $issue) => DocumentValidationIssueData::fromArray($issue), $data['errors'] ?? []),
-            warnings: array_map(fn(array $issue) => DocumentValidationIssueData::fromArray($issue), $data['warnings'] ?? []),
+            errors: array_map(fn(array $issue) => DocumentValidationIssueData::fromArray($issue), self::list($data, 'errors')),
+            warnings: array_map(fn(array $issue) => DocumentValidationIssueData::fromArray($issue), self::list($data, 'warnings')),
         );
     }
 
@@ -31,13 +35,5 @@ readonly class DocumentValidationData
     public function hasWarnings(): bool
     {
         return $this->warnings !== [];
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'errors' => array_map(fn(DocumentValidationIssueData $issue) => $issue->toArray(), $this->errors),
-            'warnings' => array_map(fn(DocumentValidationIssueData $issue) => $issue->toArray(), $this->warnings),
-        ];
     }
 }

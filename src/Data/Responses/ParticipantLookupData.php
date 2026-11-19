@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Responses;
 
+use Ecourier\Data\Responses\Concerns\ParsesResponseData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Mode;
 
-readonly class ParticipantLookupData
+final readonly class ParticipantLookupData
 {
+    use ParsesResponseData;
+
     public function __construct(
         public Channel $channel,
         public Mode $mode,
@@ -22,26 +25,13 @@ readonly class ParticipantLookupData
     public static function fromArray(array $data): self
     {
         return new self(
-            channel: Channel::from($data['channel']),
-            mode: Mode::from($data['mode']),
-            entityName: $data['entityName'],
-            country: $data['country'],
-            registrationDate: $data['registrationDate'],
-            orgNo: $data['orgNo'],
-            registryUrl: $data['registryUrl'],
+            channel: self::requiredEnum($data, 'channel', Channel::class),
+            mode: self::requiredEnum($data, 'mode', Mode::class),
+            entityName: self::required($data, 'entityName'),
+            country: self::optional($data, 'country'),
+            registrationDate: self::required($data, 'registrationDate'),
+            orgNo: self::required($data, 'orgNo'),
+            registryUrl: self::required($data, 'registryUrl'),
         );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'channel' => $this->channel->value,
-            'mode' => $this->mode->value,
-            'entityName' => $this->entityName,
-            'country' => $this->country,
-            'registrationDate' => $this->registrationDate,
-            'orgNo' => $this->orgNo,
-            'registryUrl' => $this->registryUrl,
-        ];
     }
 }

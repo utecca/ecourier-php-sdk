@@ -7,7 +7,7 @@ namespace Ecourier\Data\Requests;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
 
-readonly class CreateParticipantData
+final readonly class CreateParticipantData
 {
     /** @param Channel[] $channels */
     public function __construct(

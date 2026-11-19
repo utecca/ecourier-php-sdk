@@ -74,17 +74,6 @@ it('maps nested document webhook data', function () {
     expect($webhook->document->company?->name)->toBe('Acme Danmark A/S');
 });
 
-it('serializes document webhook data with wire keys', function () {
-    $result = DocumentWebhook::fromRequestBody(webhookBody())->toArray();
-
-    expect($result['event_id'])->toBe('evt_01hxyz');
-    expect($result['payload']['document']['dashboard_url'])->toBe('https://app.ecourier.test/documents/doc_01xyz');
-    expect($result['payload']['document']['latest_e2e_message_uuid'])->toBe('msg_01abc');
-    expect($result['payload']['document']['sender']['scheme'])->toBe('DK:CVR');
-    expect($result['payload']['document']['recipient']['identifier'])->toBe('87654321');
-    expect($result['payload']['document']['ubl']['profile_id'])->toBe('urn:www.nesubl.eu:profiles:profile5:ver2.0');
-});
-
 it('parses a document webhook with a not-yet-transmitted document', function () {
     $data = json_decode(webhookBody(), true, flags: JSON_THROW_ON_ERROR);
     $data['payload']['document']['status'] = 'Pending';
@@ -97,7 +86,6 @@ it('parses a document webhook with a not-yet-transmitted document', function () 
     expect($webhook->document->transmittedAt)->toBeNull();
     expect($webhook->document->latestE2eMessageUuid)->toBeNull();
     expect($webhook->document->latestE2eTransmissionId)->toBeNull();
-    expect($webhook->toArray()['payload']['document']['transmitted_at'])->toBeNull();
 });
 
 it('parses a document webhook with unextracted UBL data', function () {
@@ -114,7 +102,6 @@ it('parses a document webhook with unextracted UBL data', function () {
     expect($webhook->document->ubl->uuid)->toBeNull();
     expect($webhook->document->ubl->profileId)->toBeNull();
     expect($webhook->document->ubl->customizationId)->toBeNull();
-    expect($webhook->toArray()['payload']['document']['ubl']['id'])->toBeNull();
 });
 
 it('parses a document webhook with a UBL uuid', function () {
@@ -124,7 +111,6 @@ it('parses a document webhook with a UBL uuid', function () {
     $webhook = DocumentWebhook::fromArray($data);
 
     expect($webhook->document->ubl->uuid)->toBe('660e8400-e29b-41d4-a716-446655440007');
-    expect($webhook->toArray()['payload']['document']['ubl']['uuid'])->toBe('660e8400-e29b-41d4-a716-446655440007');
 });
 
 it('throws on invalid webhook JSON', function () {
@@ -142,7 +128,6 @@ it('accepts a null company id for deleted companies', function () {
     $webhook = DocumentWebhook::fromArray($data);
 
     expect($webhook->companyId)->toBeNull();
-    expect($webhook->toArray()['company_id'])->toBeNull();
 });
 
 it('verifies a valid webhook signature', function () {

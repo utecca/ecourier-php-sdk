@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Responses;
 
+use Ecourier\Data\Responses\Concerns\ParsesResponseData;
 use Ecourier\Enums\IdentifierScheme;
 
-readonly class DocumentParticipantData
+final readonly class DocumentParticipantData
 {
+    use ParsesResponseData;
+
     public function __construct(
-        public IdentifierScheme $scheme,
+        public ?IdentifierScheme $scheme,
         public string $identifier,
         public string $schemeIcd,
         public string $fullIdentifier,
@@ -18,20 +21,10 @@ readonly class DocumentParticipantData
     public static function fromArray(array $data): self
     {
         return new self(
-            scheme: IdentifierScheme::from($data['scheme']),
-            identifier: $data['identifier'],
-            schemeIcd: $data['scheme_icd'],
-            fullIdentifier: $data['full_identifier'],
+            scheme: self::enum(IdentifierScheme::class, self::optional($data, 'scheme')),
+            identifier: self::required($data, 'identifier'),
+            schemeIcd: self::required($data, 'scheme_icd'),
+            fullIdentifier: self::required($data, 'full_identifier'),
         );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'scheme' => $this->scheme->value,
-            'identifier' => $this->identifier,
-            'scheme_icd' => $this->schemeIcd,
-            'full_identifier' => $this->fullIdentifier,
-        ];
     }
 }

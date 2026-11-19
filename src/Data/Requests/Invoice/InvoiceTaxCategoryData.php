@@ -6,7 +6,7 @@ namespace Ecourier\Data\Requests\Invoice;
 
 use Ecourier\Enums\TaxCategoryCode;
 
-readonly class InvoiceTaxCategoryData
+final readonly class InvoiceTaxCategoryData
 {
     public function __construct(
         public TaxCategoryCode $code,

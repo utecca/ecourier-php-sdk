@@ -27,7 +27,7 @@ class CompaniesResource extends BaseResource
         string|array|null $country = null,
         string|array|null $name = null,
         ?bool $signed = null,
-        int $perPage = 10,
+        int $perPage = 25,
     ): CompaniesPaginator {
         return new CompaniesPaginator($this->connector, new GetCompaniesRequest(
             channel: $channel,

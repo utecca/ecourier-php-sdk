@@ -8,13 +8,19 @@ use Ecourier\Data\Responses\ParticipantData;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 
+/**
+ * @extends EcourierPaginator<ParticipantData>
+ */
 class ParticipantsPaginator extends EcourierPaginator
 {
+    /**
+     * @return list<ParticipantData>
+     */
     protected function getPageItems(Response $response, Request $request): array
     {
-        return array_map(
+        return array_values(array_map(
             fn(array $item) => ParticipantData::fromArray($item),
             $response->json('data') ?? [],
-        );
+        ));
     }
 }

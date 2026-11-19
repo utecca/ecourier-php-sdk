@@ -7,7 +7,7 @@ namespace Ecourier\Data\Requests;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Undefined;
 
-readonly class UpdateParticipantData
+final readonly class UpdateParticipantData
 {
     /**
      * @param ?Channel[] $channels

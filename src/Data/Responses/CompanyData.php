@@ -5,11 +5,17 @@ declare(strict_types=1);
 namespace Ecourier\Data\Responses;
 
 use DateTimeImmutable;
+use Ecourier\Data\Responses\Concerns\ParsesResponseData;
 use Ecourier\Enums\Mode;
 
-readonly class CompanyData
+final readonly class CompanyData
 {
-    /** @param CompanyParticipantData[] $participants */
+    use ParsesResponseData;
+
+    /**
+     * @param CompanyParticipantData[] $participants
+     * @param string $webUrl Link to the company in the eCourier portal.
+     */
     public function __construct(
         public string $id,
         public string $name,
@@ -20,35 +26,22 @@ readonly class CompanyData
         public string $country,
         public ?CompanyAuthorisationData $authorisation,
         public array $participants,
+        public string $webUrl,
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'],
-            name: $data['name'],
-            mode: Mode::from($data['mode']),
-            companyNo: $data['company_no'],
-            createdAt: new DateTimeImmutable($data['created_at']),
-            updatedAt: new DateTimeImmutable($data['updated_at']),
-            country: $data['country'],
-            authorisation: $data['authorisation'] !== null ? CompanyAuthorisationData::fromArray($data['authorisation']) : null,
-            participants: array_map(fn(array $participant) => CompanyParticipantData::fromArray($participant), $data['participants']),
+            id: self::required($data, 'id'),
+            name: self::required($data, 'name'),
+            mode: self::requiredEnum($data, 'mode', Mode::class),
+            companyNo: self::required($data, 'company_no'),
+            createdAt: self::date($data, 'created_at'),
+            updatedAt: self::date($data, 'updated_at'),
+            country: self::required($data, 'country'),
+            authorisation: isset($data['authorisation']) ? CompanyAuthorisationData::fromArray($data['authorisation']) : null,
+            participants: array_map(fn(array $participant) => CompanyParticipantData::fromArray($participant), self::list($data, 'participants')),
+            webUrl: self::required($data, 'web_url'),
         );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'mode' => $this->mode->value,
-            'company_no' => $this->companyNo,
-            'created_at' => $this->createdAt->format('Y-m-d\TH:i:sP'),
-            'updated_at' => $this->updatedAt->format('Y-m-d\TH:i:sP'),
-            'country' => $this->country,
-            'authorisation' => $this->authorisation?->toArray(),
-            'participants' => array_map(fn(CompanyParticipantData $participant) => $participant->toArray(), $this->participants),
-        ];
     }
 }

@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Responses;
 
-readonly class CompanyAuthorisationSignerData
+use Ecourier\Data\Responses\Concerns\ParsesResponseData;
+
+final readonly class CompanyAuthorisationSignerData
 {
+    use ParsesResponseData;
+
     public function __construct(
         public string $firstName,
         public string $lastName,
@@ -15,9 +19,9 @@ readonly class CompanyAuthorisationSignerData
     public static function fromArray(array $data): self
     {
         return new self(
-            firstName: $data['first_name'],
-            lastName: $data['last_name'],
-            title: $data['title'],
+            firstName: self::required($data, 'first_name'),
+            lastName: self::required($data, 'last_name'),
+            title: self::required($data, 'title'),
         );
     }
 

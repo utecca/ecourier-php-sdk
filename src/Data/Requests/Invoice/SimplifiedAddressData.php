@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Requests\Invoice;
 
-readonly class SimplifiedAddressData
+final readonly class SimplifiedAddressData
 {
     public function __construct(
         public string $streetName,

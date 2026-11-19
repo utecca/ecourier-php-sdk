@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Ecourier\Data\Responses;
 
-readonly class ParticipantCapabilitySetData
+use Ecourier\Data\Responses\Concerns\ParsesResponseData;
+
+final readonly class ParticipantCapabilitySetData
 {
+    use ParsesResponseData;
+
     public function __construct(
         public string $id,
         public string $name,
@@ -14,16 +18,8 @@ readonly class ParticipantCapabilitySetData
     public static function fromArray(array $data): self
     {
         return new self(
-            id: $data['id'],
-            name: $data['name'],
+            id: self::required($data, 'id'),
+            name: self::required($data, 'name'),
         );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-        ];
     }
 }
