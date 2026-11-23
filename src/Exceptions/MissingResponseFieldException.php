@@ -4,15 +4,10 @@ declare(strict_types=1);
 
 namespace Ecourier\Exceptions;
 
-use UnexpectedValueException;
-
 /**
  * Thrown when an API response is missing a field the SDK requires to build a data object.
- *
- * It is not an {@see EcourierException}: the request itself succeeded, but the response
- * didn't have the shape this version of the SDK expects.
  */
-class MissingResponseFieldException extends UnexpectedValueException
+class MissingResponseFieldException extends UnexpectedResponseException
 {
     /**
      * @param class-string $dataClass The data object that was being built.

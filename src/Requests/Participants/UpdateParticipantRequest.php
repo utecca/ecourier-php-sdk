@@ -8,6 +8,7 @@ use Ecourier\Data\Requests\UpdateParticipantData;
 use Ecourier\Data\Responses\ParticipantData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Undefined;
+use Ecourier\Support\ResponseBody;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -47,6 +48,6 @@ class UpdateParticipantRequest extends Request implements HasBody
 
     public function createDtoFromResponse(Response $response): ParticipantData
     {
-        return ParticipantData::fromArray($response->array());
+        return ParticipantData::fromArray(ResponseBody::decode($response));
     }
 }

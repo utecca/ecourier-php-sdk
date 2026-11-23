@@ -19,9 +19,9 @@ final readonly class CompanyAuthorisationSignerData
     public static function fromArray(array $data): self
     {
         return new self(
-            firstName: self::required($data, 'first_name'),
-            lastName: self::required($data, 'last_name'),
-            title: self::required($data, 'title'),
+            firstName: self::string($data, 'first_name'),
+            lastName: self::string($data, 'last_name'),
+            title: self::string($data, 'title'),
         );
     }
 

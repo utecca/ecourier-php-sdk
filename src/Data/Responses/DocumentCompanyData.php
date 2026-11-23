@@ -18,8 +18,8 @@ final readonly class DocumentCompanyData
     public static function fromArray(array $data): self
     {
         return new self(
-            id: self::required($data, 'id'),
-            name: self::required($data, 'name'),
+            id: self::string($data, 'id'),
+            name: self::string($data, 'name'),
         );
     }
 }

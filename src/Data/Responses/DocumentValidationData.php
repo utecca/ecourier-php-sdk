@@ -22,8 +22,8 @@ final readonly class DocumentValidationData
     public static function fromArray(array $data): self
     {
         return new self(
-            errors: array_map(fn(array $issue) => DocumentValidationIssueData::fromArray($issue), self::list($data, 'errors')),
-            warnings: array_map(fn(array $issue) => DocumentValidationIssueData::fromArray($issue), self::list($data, 'warnings')),
+            errors: array_map(fn(array $issue) => DocumentValidationIssueData::fromArray($issue), self::objects($data, 'errors')),
+            warnings: array_map(fn(array $issue) => DocumentValidationIssueData::fromArray($issue), self::objects($data, 'warnings')),
         );
     }
 

@@ -6,6 +6,7 @@ namespace Ecourier\Requests\Companies;
 
 use Ecourier\Data\Requests\UpdateCompanyData;
 use Ecourier\Data\Responses\CompanyData;
+use Ecourier\Support\ResponseBody;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -35,6 +36,6 @@ class UpdateCompanyRequest extends Request implements HasBody
 
     public function createDtoFromResponse(Response $response): CompanyData
     {
-        return CompanyData::fromArray($response->array());
+        return CompanyData::fromArray(ResponseBody::decode($response));
     }
 }

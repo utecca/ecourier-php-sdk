@@ -45,23 +45,23 @@ final readonly class DocumentData
     public static function fromArray(array $data): self
     {
         return new self(
-            id: self::required($data, 'id'),
+            id: self::string($data, 'id'),
             status: self::enum(DocumentStatus::class, self::optional($data, 'status')),
             channel: self::requiredEnum($data, 'channel', Channel::class),
             mode: self::requiredEnum($data, 'mode', Mode::class),
             direction: self::requiredEnum($data, 'direction', Direction::class),
             type: self::enum(DocumentType::class, self::optional($data, 'type')),
             submissionFormat: self::enum(SubmissionFormat::class, self::optional($data, 'submission_format')),
-            sender: DocumentParticipantData::fromArray(self::required($data, 'sender')),
-            recipient: DocumentParticipantData::fromArray(self::required($data, 'recipient')),
-            webUrl: self::required($data, 'web_url'),
+            sender: DocumentParticipantData::fromArray(self::object($data, 'sender')),
+            recipient: DocumentParticipantData::fromArray(self::object($data, 'recipient')),
+            webUrl: self::string($data, 'web_url'),
             createdAt: self::date($data, 'created_at'),
-            ubl: DocumentUblData::fromArray(self::required($data, 'ubl')),
-            validation: DocumentValidationData::fromArray(self::required($data, 'validation')),
-            attempts: array_map(fn(array $attempt) => DocumentAttemptData::fromArray($attempt), self::list($data, 'attempts')),
-            latestE2eMessageUuid: self::optional($data, 'latest_e2e_message_uuid'),
-            latestE2eTransmissionId: self::optional($data, 'latest_e2e_transmission_id'),
-            company: isset($data['company']) ? DocumentCompanyData::fromArray($data['company']) : null,
+            ubl: DocumentUblData::fromArray(self::object($data, 'ubl')),
+            validation: DocumentValidationData::fromArray(self::object($data, 'validation')),
+            attempts: array_map(fn(array $attempt) => DocumentAttemptData::fromArray($attempt), self::objects($data, 'attempts')),
+            latestE2eMessageUuid: self::optionalString($data, 'latest_e2e_message_uuid'),
+            latestE2eTransmissionId: self::optionalString($data, 'latest_e2e_transmission_id'),
+            company: isset($data['company']) ? DocumentCompanyData::fromArray(self::object($data, 'company')) : null,
             transmittedAt: self::optionalDate($data, 'transmitted_at'),
         );
     }

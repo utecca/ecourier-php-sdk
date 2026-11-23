@@ -36,18 +36,18 @@ final readonly class ParticipantData
     public static function fromArray(array $data): self
     {
         return new self(
-            id: self::required($data, 'id'),
-            company: ParticipantCompanyData::fromArray(self::required($data, 'company')),
-            capabilitySet: isset($data['capability_set']) ? ParticipantCapabilitySetData::fromArray($data['capability_set']) : null,
+            id: self::string($data, 'id'),
+            company: ParticipantCompanyData::fromArray(self::object($data, 'company')),
+            capabilitySet: isset($data['capability_set']) ? ParticipantCapabilitySetData::fromArray(self::object($data, 'capability_set')) : null,
             mode: self::requiredEnum($data, 'mode', Mode::class),
             scheme: self::enum(IdentifierScheme::class, self::optional($data, 'scheme')),
-            identifier: self::required($data, 'identifier'),
-            schemeIcd: self::required($data, 'scheme_icd'),
-            fullIdentifier: self::required($data, 'full_identifier'),
+            identifier: self::string($data, 'identifier'),
+            schemeIcd: self::string($data, 'scheme_icd'),
+            fullIdentifier: self::string($data, 'full_identifier'),
             channels: self::enumList($data, 'channels', Channel::class),
             createdAt: self::date($data, 'created_at'),
             updatedAt: self::date($data, 'updated_at'),
-            webUrl: self::required($data, 'web_url'),
+            webUrl: self::string($data, 'web_url'),
         );
     }
 }

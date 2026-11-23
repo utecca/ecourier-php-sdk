@@ -32,16 +32,16 @@ final readonly class CompanyData
     public static function fromArray(array $data): self
     {
         return new self(
-            id: self::required($data, 'id'),
-            name: self::required($data, 'name'),
+            id: self::string($data, 'id'),
+            name: self::string($data, 'name'),
             mode: self::requiredEnum($data, 'mode', Mode::class),
-            companyNo: self::required($data, 'company_no'),
+            companyNo: self::string($data, 'company_no'),
             createdAt: self::date($data, 'created_at'),
             updatedAt: self::date($data, 'updated_at'),
-            country: self::required($data, 'country'),
-            authorisation: isset($data['authorisation']) ? CompanyAuthorisationData::fromArray($data['authorisation']) : null,
-            participants: array_map(fn(array $participant) => CompanyParticipantData::fromArray($participant), self::list($data, 'participants')),
-            webUrl: self::required($data, 'web_url'),
+            country: self::string($data, 'country'),
+            authorisation: isset($data['authorisation']) ? CompanyAuthorisationData::fromArray(self::object($data, 'authorisation')) : null,
+            participants: array_map(fn(array $participant) => CompanyParticipantData::fromArray($participant), self::objects($data, 'participants')),
+            webUrl: self::string($data, 'web_url'),
         );
     }
 }

@@ -24,9 +24,9 @@ final readonly class DocumentAttemptData
     {
         return new self(
             status: self::enum(DocumentAttemptStatus::class, self::optional($data, 'status')),
-            errorMessage: self::optional($data, 'error_message'),
-            e2eMessageUuid: self::required($data, 'e2e_message_uuid'),
-            e2eTransmissionId: self::optional($data, 'e2e_transmission_id'),
+            errorMessage: self::optionalString($data, 'error_message'),
+            e2eMessageUuid: self::string($data, 'e2e_message_uuid'),
+            e2eTransmissionId: self::optionalString($data, 'e2e_transmission_id'),
             createdAt: self::date($data, 'created_at'),
         );
     }

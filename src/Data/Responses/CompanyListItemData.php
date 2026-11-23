@@ -24,11 +24,11 @@ final readonly class CompanyListItemData
     public static function fromArray(array $data): self
     {
         return new self(
-            id: self::required($data, 'id'),
-            name: self::required($data, 'name'),
-            country: self::required($data, 'country'),
-            companyNo: self::required($data, 'company_no'),
-            webUrl: self::required($data, 'web_url'),
+            id: self::string($data, 'id'),
+            name: self::string($data, 'name'),
+            country: self::string($data, 'country'),
+            companyNo: self::string($data, 'company_no'),
+            webUrl: self::string($data, 'web_url'),
         );
     }
 }

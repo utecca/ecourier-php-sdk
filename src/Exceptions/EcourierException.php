@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Ecourier\Exceptions;
 
 use Exception;
-use JsonException;
 use Saloon\Http\Response;
 
 /**
@@ -39,20 +38,33 @@ class EcourierException extends Exception
     public static function fromResponse(Response $response): static
     {
         $body = static::decodeBody($response);
-        $message = $body['message'] ?? $body['error'] ?? "Request failed with status {$response->status()}.";
+        $message = static::firstString($body, 'message', 'error') ?? "Request failed with status {$response->status()}.";
 
         return new static($message, $response, $response->status());
     }
 
     /**
-     * Error bodies are not always JSON, e.g. when a proxy in front of the API returns an HTML 502 page.
+     * Error bodies are not always a JSON object, e.g. when a proxy in front of the API returns
+     * an HTML 502 page or a bare JSON string. Those count as an empty body.
      */
     protected static function decodeBody(Response $response): array
     {
-        try {
-            return $response->json();
-        } catch (JsonException) {
-            return [];
+        $body = json_decode($response->body(), true);
+
+        return is_array($body) ? $body : [];
+    }
+
+    /**
+     * The first of the given fields that holds a string.
+     */
+    protected static function firstString(array $body, string ...$keys): ?string
+    {
+        foreach ($keys as $key) {
+            if (is_string($body[$key] ?? null)) {
+                return $body[$key];
+            }
         }
+
+        return null;
     }
 }

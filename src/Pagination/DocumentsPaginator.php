@@ -18,9 +18,9 @@ class DocumentsPaginator extends EcourierPaginator
      */
     protected function getPageItems(Response $response, Request $request): array
     {
-        return array_values(array_map(
+        return array_map(
             fn(array $item) => DocumentListItemData::fromArray($item),
-            $response->json('data') ?? [],
-        ));
+            $this->pageData($response),
+        );
     }
 }

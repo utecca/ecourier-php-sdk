@@ -19,9 +19,9 @@ final readonly class DocumentValidationIssueData
     public static function fromArray(array $data): self
     {
         return new self(
-            message: self::required($data, 'message'),
-            code: self::optional($data, 'code'),
-            location: self::optional($data, 'location'),
+            message: self::string($data, 'message'),
+            code: self::optionalString($data, 'code'),
+            location: self::optionalString($data, 'location'),
         );
     }
 }

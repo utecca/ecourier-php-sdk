@@ -8,10 +8,15 @@ use Ecourier\Data\Responses\DocumentData;
 use Ecourier\Data\Responses\DocumentListItemData;
 use Ecourier\Data\Responses\DocumentValidationData;
 use Ecourier\Data\Responses\ParticipantData;
+use Ecourier\EcourierConnector;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\DocumentStatus;
 use Ecourier\Enums\IdentifierScheme;
+use Ecourier\Exceptions\InvalidResponseFieldException;
 use Ecourier\Exceptions\MissingResponseFieldException;
+use Ecourier\Exceptions\UnexpectedResponseException;
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
 
 function fixtureArray(string $name): array
 {
@@ -88,6 +93,98 @@ it('defaults missing validation issue lists to empty', function () {
 
     expect($validation->errors)->toBe([])
         ->and($validation->warnings)->toBe([]);
+});
+
+// --- Wrong-typed fields ---
+
+it('throws a named exception when a field has the wrong type', function () {
+    $data = fixtureArray('document');
+    $data['id'] = 123;
+
+    DocumentData::fromArray($data);
+})->throws(
+    InvalidResponseFieldException::class,
+    'The eCourier response field "id" for Ecourier\Data\Responses\DocumentData must be a string, int given.',
+);
+
+it('names the nested data object and field that has the wrong type', function () {
+    $data = fixtureArray('document');
+    $data['sender']['identifier'] = ['12345678'];
+
+    try {
+        DocumentData::fromArray($data);
+    } catch (InvalidResponseFieldException $exception) {
+        expect($exception->dataClass)->toBe(Ecourier\Data\Responses\DocumentParticipantData::class)
+            ->and($exception->field)->toBe('identifier')
+            ->and($exception)->toBeInstanceOf(UnexpectedResponseException::class);
+
+        return;
+    }
+
+    test()->fail('Expected an InvalidResponseFieldException.');
+});
+
+it('rejects a wrong-typed field instead of raising a TypeError', function (string $fixture, string $class, callable $break, string $field) {
+    $data = $break(fixtureArray($fixture));
+
+    try {
+        $class::fromArray($data);
+    } catch (InvalidResponseFieldException $exception) {
+        expect($exception->field)->toBe($field);
+
+        return;
+    }
+
+    test()->fail('Expected an InvalidResponseFieldException.');
+})->with([
+    'optional string' => ['document', DocumentData::class, fn(array $d) => ['latest_e2e_message_uuid' => 5] + $d, 'latest_e2e_message_uuid'],
+    'nested object' => ['document', DocumentData::class, fn(array $d) => ['sender' => 'acme'] + $d, 'sender'],
+    'optional nested object' => ['document', DocumentData::class, fn(array $d) => ['company' => 'acme'] + $d, 'company'],
+    'list of objects' => ['company', CompanyData::class, fn(array $d) => ['participants' => ['acme']] + $d, 'participants'],
+    'date' => ['document', DocumentData::class, fn(array $d) => ['created_at' => 1717236360] + $d, 'created_at'],
+    'malformed date' => ['document', DocumentData::class, fn(array $d) => ['created_at' => 'not a date'] + $d, 'created_at'],
+    'optional date' => ['document', DocumentData::class, fn(array $d) => ['transmitted_at' => 1717236360] + $d, 'transmitted_at'],
+    'strict enum' => ['document', DocumentData::class, fn(array $d) => ['mode' => 1] + $d, 'mode'],
+    'strict enum in a list' => ['participant', ParticipantData::class, fn(array $d) => ['channels' => [1]] + $d, 'channels'],
+]);
+
+it('maps a wrong-typed value for a lenient enum to null', function () {
+    $data = fixtureArray('document');
+    $data['status'] = 5;
+
+    expect(DocumentData::fromArray($data)->status)->toBeNull();
+});
+
+// --- Response bodies ---
+
+it('throws a named exception when a successful response is not a JSON object', function (string $body) {
+    $connector = new EcourierConnector(apiKey: 'pk_test_fake');
+    $connector->withMockClient(new MockClient([MockResponse::make(body: $body, status: 200)]));
+
+    $connector->companies()->find('comp_01abc');
+})->throws(UnexpectedResponseException::class, 'The eCourier response body is not a JSON object.')->with([
+    'null' => ['null'],
+    'a string' => ['"OK"'],
+    'a number' => ['123'],
+    'html' => ['<html><body>OK</body></html>'],
+]);
+
+it('throws a named exception when a page of results is not a list of objects', function (string $body) {
+    $connector = new EcourierConnector(apiKey: 'pk_test_fake');
+    $connector->withMockClient(new MockClient([MockResponse::make(body: $body, status: 200)]));
+
+    iterator_to_array($connector->companies()->list()->items());
+})->throws(UnexpectedResponseException::class)->with([
+    'null body' => ['null'],
+    'data is a string' => ['{"data": "nope"}'],
+    'an item is a string' => ['{"data": ["nope"]}'],
+]);
+
+it('treats a page without data as empty', function () {
+    $connector = new EcourierConnector(apiKey: 'pk_test_fake');
+    $connector->withMockClient(new MockClient([MockResponse::make(body: '{"meta": "nope"}', status: 200)]));
+
+    expect(iterator_to_array($connector->companies()->list()->items()))->toBe([]);
 });
 
 // --- Unknown enum values ---

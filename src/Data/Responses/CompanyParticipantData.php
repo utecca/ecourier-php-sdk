@@ -25,11 +25,11 @@ final readonly class CompanyParticipantData
     public static function fromArray(array $data): self
     {
         return new self(
-            id: self::required($data, 'id'),
+            id: self::string($data, 'id'),
             scheme: self::enum(IdentifierScheme::class, self::optional($data, 'scheme')),
-            identifier: self::required($data, 'identifier'),
-            schemeIcd: self::required($data, 'scheme_icd'),
-            fullIdentifier: self::required($data, 'full_identifier'),
+            identifier: self::string($data, 'identifier'),
+            schemeIcd: self::string($data, 'scheme_icd'),
+            fullIdentifier: self::string($data, 'full_identifier'),
             channels: self::enumList($data, 'channels', Channel::class),
         );
     }

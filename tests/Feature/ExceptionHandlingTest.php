@@ -147,6 +147,69 @@ it('throws an ecourier exception for non-json error bodies', function () {
     $connector->companies()->get('comp_01abc');
 })->throws(EcourierException::class, 'Request failed with status 502.');
 
+it('throws an ecourier exception for json error bodies that are not an object', function (string $body) {
+    $connector = new EcourierConnector(apiKey: 'pk_test_fake');
+    $connector->withMockClient(new MockClient([
+        GetCompanyRequest::class => MockResponse::make(body: $body, status: 502),
+    ]));
+
+    try {
+        $connector->companies()->get('comp_01abc');
+    } catch (EcourierException $e) {
+        expect($e->getMessage())->toBe('Request failed with status 502.')
+            ->and($e->getErrorCode())->toBeNull();
+
+        return;
+    }
+
+    test()->fail('Expected an EcourierException.');
+})->with([
+    'null' => ['null'],
+    'a string' => ['"Bad Gateway"'],
+    'a number' => ['123'],
+]);
+
+it('falls back to a default message when the error message is not a string', function (int $status, array $body, string $exception, string $message) {
+    $connector = new EcourierConnector(apiKey: 'pk_test_fake');
+    $connector->withMockClient(new MockClient([
+        GetCompanyRequest::class => MockResponse::make(body: $body, status: $status),
+    ]));
+
+    try {
+        $connector->companies()->get('comp_01abc');
+    } catch (EcourierException $e) {
+        expect($e)->toBeInstanceOf($exception)
+            ->and($e->getMessage())->toBe($message);
+
+        return;
+    }
+
+    test()->fail('Expected an EcourierException.');
+})->with([
+    'message is an array' => [500, ['message' => ['Server error.']], EcourierException::class, 'Request failed with status 500.'],
+    'message is a number' => [500, ['message' => 5], EcourierException::class, 'Request failed with status 500.'],
+    'error is used when message is not a string' => [500, ['message' => ['x'], 'error' => 'Server error.'], EcourierException::class, 'Server error.'],
+    'validation message is an array' => [422, ['message' => ['x']], ValidationException::class, 'Validation failed.'],
+]);
+
+it('has no validation errors when the errors field is not an array', function () {
+    $connector = new EcourierConnector(apiKey: 'pk_test_fake');
+    $connector->withMockClient(new MockClient([
+        GetCompanyRequest::class => MockResponse::make(body: ['message' => 'Validation failed.', 'errors' => 'nope'], status: 422),
+    ]));
+
+    try {
+        $connector->companies()->get('comp_01abc');
+    } catch (ValidationException $e) {
+        expect($e->getErrors())->toBe([])
+            ->and($e->getMessage())->toBe('Validation failed.');
+
+        return;
+    }
+
+    test()->fail('Expected a ValidationException.');
+});
+
 it('exposes the api error code', function () {
     $mockClient = new MockClient([
         GetCompanyRequest::class => MockResponse::make(
