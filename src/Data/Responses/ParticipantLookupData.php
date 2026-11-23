@@ -27,11 +27,11 @@ final readonly class ParticipantLookupData
         return new self(
             channel: self::requiredEnum($data, 'channel', Channel::class),
             mode: self::requiredEnum($data, 'mode', Mode::class),
-            entityName: self::required($data, 'entityName'),
-            country: self::optional($data, 'country'),
-            registrationDate: self::required($data, 'registrationDate'),
-            orgNo: self::required($data, 'orgNo'),
-            registryUrl: self::required($data, 'registryUrl'),
+            entityName: self::string($data, 'entityName'),
+            country: self::optionalString($data, 'country'),
+            registrationDate: self::string($data, 'registrationDate'),
+            orgNo: self::string($data, 'orgNo'),
+            registryUrl: self::string($data, 'registryUrl'),
         );
     }
 }

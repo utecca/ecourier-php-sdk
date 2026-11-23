@@ -17,7 +17,7 @@ final readonly class SendDocumentData
     public static function fromArray(array $data): self
     {
         return new self(
-            id: self::required($data, 'id'),
+            id: self::string($data, 'id'),
         );
     }
 }

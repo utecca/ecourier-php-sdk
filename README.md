@@ -543,7 +543,7 @@ if ($event->event === WebhookEventType::DocumentReceiveCreated) {
 }
 ```
 
-An unknown `event` value throws `InvalidArgumentException`; malformed JSON throws `JsonException`.
+An unknown `event` value, or a body that is not a JSON object, throws `InvalidArgumentException`; malformed JSON throws `JsonException`. A missing or wrong-typed field throws an [`UnexpectedResponseException`](#failures-without-an-error-response).
 
 `companyId` is `null` when the company has been deleted.
 
@@ -632,7 +632,7 @@ foreach ($documents->items() as $document) {
 
 ## Exception Handling
 
-The SDK throws typed exceptions for every error case — no checking status codes manually.
+The SDK throws a typed exception for every error response from the API — no checking status codes manually.
 
 | Exception | When |
 |---|---|
@@ -646,7 +646,7 @@ The SDK throws typed exceptions for every error case — no checking status code
 | `FailedDependencyException` | An upstream registry or network lookup failed |
 | `EcourierException` | Any other error, such as a server error or a non-JSON response like a proxy's 502 page |
 
-All exceptions extend `EcourierException`, so you can catch broadly or narrowly, and `getResponse()` gives you the HTTP response, including its status code. The one exception is `MissingResponseFieldException`: the request succeeded, but the response is missing a field this version of the SDK requires. It extends `UnexpectedValueException` and has `$dataClass` and `$field` properties.
+These all extend `EcourierException`, so you can catch broadly or narrowly, and `getResponse()` gives you the HTTP response, including its status code.
 
 ```php
 use Ecourier\Exceptions\AuthenticationException;
@@ -680,6 +680,38 @@ try {
     $e->getErrorCode(); // 'Billing.InsufficientBalance'
 }
 ```
+
+### Failures without an error response
+
+Two kinds of failure are not an `EcourierException`, because the API did not answer with an error:
+
+| Exception | When |
+|---|---|
+| `Saloon\Exceptions\Request\FatalRequestException` | The request got no response, e.g. a connection failure or a timeout |
+| `UnexpectedResponseException` | The request succeeded, but the response does not have the shape this version of the SDK expects |
+
+`UnexpectedResponseException` extends `UnexpectedValueException`. It is thrown as is when the response body is not a JSON object, and has two subclasses with `$dataClass` and `$field` properties:
+
+- `MissingResponseFieldException`: a required field is missing.
+- `InvalidResponseFieldException`: a field has the wrong type, e.g. a number where a string is expected.
+
+```php
+use Ecourier\Exceptions\EcourierException;
+use Ecourier\Exceptions\UnexpectedResponseException;
+use Saloon\Exceptions\Request\FatalRequestException;
+
+try {
+    $document = $ecourier->documents()->find($id);
+} catch (EcourierException $e) {
+    // the API answered with an error
+} catch (FatalRequestException $e) {
+    // no answer from the API
+} catch (UnexpectedResponseException $e) {
+    // the answer is not what this version of the SDK expects
+}
+```
+
+An unknown `Channel`, `Mode` or `Direction` value in a response throws PHP's `ValueError`.
 
 ---
 

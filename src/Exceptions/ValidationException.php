@@ -24,8 +24,8 @@ class ValidationException extends EcourierException
     public static function fromResponse(Response $response): static
     {
         $body = static::decodeBody($response);
-        $message = $body['message'] ?? 'Validation failed.';
-        $errors = $body['errors'] ?? [];
+        $message = static::firstString($body, 'message') ?? 'Validation failed.';
+        $errors = is_array($body['errors'] ?? null) ? $body['errors'] : [];
 
         return new static($message, $response, $response->status(), $errors);
     }

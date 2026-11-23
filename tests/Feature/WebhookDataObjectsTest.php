@@ -12,6 +12,7 @@ use Ecourier\Enums\DocumentType;
 use Ecourier\Enums\Mode;
 use Ecourier\Enums\SubmissionFormat;
 use Ecourier\Enums\WebhookEventType;
+use Ecourier\Exceptions\InvalidResponseFieldException;
 
 function webhookBody(string $event = 'Document.Send.Created'): string
 {
@@ -116,6 +117,34 @@ it('parses a document webhook with a UBL uuid', function () {
 it('throws on invalid webhook JSON', function () {
     WebhookEventFactory::fromRequestBody('{');
 })->throws(JsonException::class);
+
+it('throws on a webhook body that is not a JSON object', function (string $body) {
+    WebhookEventFactory::fromRequestBody($body);
+})->throws(InvalidArgumentException::class, 'The webhook body is not a JSON object.')->with(['null', '123', '"text"']);
+
+it('throws on a webhook body that is not a JSON object when parsing a specific event', function () {
+    DocumentWebhook::fromRequestBody('null');
+})->throws(InvalidArgumentException::class, 'The webhook body is not a JSON object.');
+
+it('throws a named exception when a webhook field has the wrong type', function (string $field, mixed $value) {
+    $data = json_decode(webhookBody(), true, flags: JSON_THROW_ON_ERROR);
+    $data[$field] = $value;
+
+    try {
+        WebhookEventFactory::fromArray($data);
+    } catch (InvalidResponseFieldException $exception) {
+        expect($exception->dataClass)->toBe(DocumentWebhook::class)
+            ->and($exception->field)->toBe($field);
+
+        return;
+    }
+
+    test()->fail('Expected an InvalidResponseFieldException.');
+})->with([
+    'event_id' => ['event_id', 5],
+    'payload' => ['payload', 'nope'],
+    'occurred_at' => ['occurred_at', 1717236360],
+]);
 
 it('throws on unknown webhook events', function () {
     WebhookEventFactory::fromRequestBody(webhookBody('Document.Unknown'));

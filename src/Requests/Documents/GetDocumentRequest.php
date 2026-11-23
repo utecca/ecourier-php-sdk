@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ecourier\Requests\Documents;
 
 use Ecourier\Data\Responses\DocumentData;
+use Ecourier\Support\ResponseBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
@@ -24,6 +25,6 @@ class GetDocumentRequest extends Request
 
     public function createDtoFromResponse(Response $response): DocumentData
     {
-        return DocumentData::fromArray($response->array());
+        return DocumentData::fromArray(ResponseBody::decode($response));
     }
 }

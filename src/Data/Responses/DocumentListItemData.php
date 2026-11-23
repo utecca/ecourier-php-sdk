@@ -32,14 +32,14 @@ final readonly class DocumentListItemData
     public static function fromArray(array $data): self
     {
         return new self(
-            id: self::required($data, 'id'),
+            id: self::string($data, 'id'),
             status: self::enum(DocumentStatus::class, self::optional($data, 'status')),
             channel: self::requiredEnum($data, 'channel', Channel::class),
             direction: self::requiredEnum($data, 'direction', Direction::class),
             type: self::enum(DocumentType::class, self::optional($data, 'type')),
             createdAt: self::date($data, 'created_at'),
-            company: isset($data['company']) ? DocumentCompanyData::fromArray($data['company']) : null,
-            webUrl: self::required($data, 'web_url'),
+            company: isset($data['company']) ? DocumentCompanyData::fromArray(self::object($data, 'company')) : null,
+            webUrl: self::string($data, 'web_url'),
         );
     }
 }

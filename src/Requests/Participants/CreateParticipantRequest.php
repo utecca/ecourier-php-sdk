@@ -6,6 +6,7 @@ namespace Ecourier\Requests\Participants;
 
 use Ecourier\Data\Requests\CreateParticipantData;
 use Ecourier\Data\Responses\ParticipantData;
+use Ecourier\Support\ResponseBody;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -34,6 +35,6 @@ class CreateParticipantRequest extends Request implements HasBody
 
     public function createDtoFromResponse(Response $response): ParticipantData
     {
-        return ParticipantData::fromArray($response->array());
+        return ParticipantData::fromArray(ResponseBody::decode($response));
     }
 }

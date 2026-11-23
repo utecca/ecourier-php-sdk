@@ -6,6 +6,7 @@ namespace Ecourier\Requests\Companies;
 
 use Ecourier\Data\Requests\SubmitAuthorisationPdfData;
 use Ecourier\Data\Responses\CompanyData;
+use Ecourier\Support\ResponseBody;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Data\MultipartValue;
 use Saloon\Enums\Method;
@@ -41,6 +42,6 @@ class SubmitAuthorisationPdfRequest extends Request implements HasBody
 
     public function createDtoFromResponse(Response $response): CompanyData
     {
-        return CompanyData::fromArray($response->array());
+        return CompanyData::fromArray(ResponseBody::decode($response));
     }
 }

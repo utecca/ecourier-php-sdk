@@ -20,10 +20,10 @@ final readonly class DocumentUblData
     public static function fromArray(array $data): self
     {
         return new self(
-            id: self::optional($data, 'id'),
-            uuid: self::optional($data, 'uuid'),
-            profileId: self::optional($data, 'profile_id'),
-            customizationId: self::optional($data, 'customization_id'),
+            id: self::optionalString($data, 'id'),
+            uuid: self::optionalString($data, 'uuid'),
+            profileId: self::optionalString($data, 'profile_id'),
+            customizationId: self::optionalString($data, 'customization_id'),
         );
     }
 }

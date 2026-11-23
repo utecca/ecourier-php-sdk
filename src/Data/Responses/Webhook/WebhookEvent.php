@@ -27,6 +27,6 @@ abstract readonly class WebhookEvent
 
     public static function fromRequestBody(string $body): static
     {
-        return static::fromArray(json_decode($body, true, flags: JSON_THROW_ON_ERROR));
+        return static::fromArray(WebhookEventFactory::decode($body));
     }
 }

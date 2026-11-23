@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ecourier\Requests\Participants;
 
 use Ecourier\Data\Responses\ParticipantData;
+use Ecourier\Support\ResponseBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
@@ -24,6 +25,6 @@ class GetParticipantRequest extends Request
 
     public function createDtoFromResponse(Response $response): ParticipantData
     {
-        return ParticipantData::fromArray($response->array());
+        return ParticipantData::fromArray(ResponseBody::decode($response));
     }
 }

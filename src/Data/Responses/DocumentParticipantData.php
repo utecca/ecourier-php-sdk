@@ -22,9 +22,9 @@ final readonly class DocumentParticipantData
     {
         return new self(
             scheme: self::enum(IdentifierScheme::class, self::optional($data, 'scheme')),
-            identifier: self::required($data, 'identifier'),
-            schemeIcd: self::required($data, 'scheme_icd'),
-            fullIdentifier: self::required($data, 'full_identifier'),
+            identifier: self::string($data, 'identifier'),
+            schemeIcd: self::string($data, 'scheme_icd'),
+            fullIdentifier: self::string($data, 'full_identifier'),
         );
     }
 }

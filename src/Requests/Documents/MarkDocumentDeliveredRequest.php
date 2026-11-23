@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ecourier\Requests\Documents;
 
 use Ecourier\Data\Responses\DocumentData;
+use Ecourier\Support\ResponseBody;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -34,6 +35,6 @@ class MarkDocumentDeliveredRequest extends Request implements HasBody
 
     public function createDtoFromResponse(Response $response): DocumentData
     {
-        return DocumentData::fromArray($response->array());
+        return DocumentData::fromArray(ResponseBody::decode($response));
     }
 }

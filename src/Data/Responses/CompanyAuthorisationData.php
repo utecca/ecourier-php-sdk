@@ -21,9 +21,9 @@ final readonly class CompanyAuthorisationData
     {
         return new self(
             signed: (bool) self::required($data, 'signed'),
-            signUrl: self::optional($data, 'sign_url'),
-            signer: CompanyAuthorisationSignerData::fromArray(self::required($data, 'signer')),
-            redirectUrl: self::optional($data, 'redirect_url'),
+            signUrl: self::optionalString($data, 'sign_url'),
+            signer: CompanyAuthorisationSignerData::fromArray(self::object($data, 'signer')),
+            redirectUrl: self::optionalString($data, 'redirect_url'),
         );
     }
 }

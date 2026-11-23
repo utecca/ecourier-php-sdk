@@ -7,6 +7,7 @@ namespace Ecourier\Requests\Lookup;
 use Ecourier\Data\Responses\ParticipantLookupData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
+use Ecourier\Support\ResponseBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
@@ -28,6 +29,6 @@ class GetParticipantRequest extends Request
 
     public function createDtoFromResponse(Response $response): ParticipantLookupData
     {
-        return ParticipantLookupData::fromArray($response->array());
+        return ParticipantLookupData::fromArray(ResponseBody::decode($response));
     }
 }
