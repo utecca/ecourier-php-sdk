@@ -8,6 +8,7 @@ use Ecourier\Data\Requests\UpdateParticipantData;
 use Ecourier\Data\Responses\ParticipantData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\Undefined;
+use Ecourier\Requests\Concerns\EncodesPathParameters;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -16,6 +17,7 @@ use Saloon\Traits\Body\HasJsonBody;
 
 class UpdateParticipantRequest extends Request implements HasBody
 {
+    use EncodesPathParameters;
     use HasJsonBody;
 
     protected Method $method = Method::PATCH;
@@ -27,7 +29,7 @@ class UpdateParticipantRequest extends Request implements HasBody
 
     public function resolveEndpoint(): string
     {
-        return "/participants/{$this->participant}";
+        return '/participants/' . self::pathParameter($this->participant, 'participant ID');
     }
 
     protected function defaultBody(): array

@@ -6,6 +6,7 @@ namespace Ecourier\Requests\Companies;
 
 use Ecourier\Data\Requests\UpdateCompanyData;
 use Ecourier\Data\Responses\CompanyData;
+use Ecourier\Requests\Concerns\EncodesPathParameters;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -14,6 +15,7 @@ use Saloon\Traits\Body\HasJsonBody;
 
 class UpdateCompanyRequest extends Request implements HasBody
 {
+    use EncodesPathParameters;
     use HasJsonBody;
 
     protected Method $method = Method::PATCH;
@@ -25,7 +27,7 @@ class UpdateCompanyRequest extends Request implements HasBody
 
     public function resolveEndpoint(): string
     {
-        return "/companies/{$this->company}";
+        return '/companies/' . self::pathParameter($this->company, 'company ID');
     }
 
     protected function defaultBody(): array

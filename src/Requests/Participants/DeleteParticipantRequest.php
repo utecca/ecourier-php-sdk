@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Ecourier\Requests\Participants;
 
+use Ecourier\Requests\Concerns\EncodesPathParameters;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 
 class DeleteParticipantRequest extends Request
 {
+    use EncodesPathParameters;
+
     protected Method $method = Method::DELETE;
 
     public function __construct(
@@ -17,6 +20,6 @@ class DeleteParticipantRequest extends Request
 
     public function resolveEndpoint(): string
     {
-        return "/participants/{$this->participant}";
+        return '/participants/' . self::pathParameter($this->participant, 'participant ID');
     }
 }

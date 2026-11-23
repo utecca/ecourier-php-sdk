@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Ecourier\Requests\Documents;
 
 use Ecourier\Data\Responses\DocumentData;
+use Ecourier\Requests\Concerns\EncodesPathParameters;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -13,6 +14,7 @@ use Saloon\Traits\Body\HasJsonBody;
 
 class MarkDocumentDeliveredRequest extends Request implements HasBody
 {
+    use EncodesPathParameters;
     use HasJsonBody;
 
     protected Method $method = Method::PATCH;
@@ -24,7 +26,7 @@ class MarkDocumentDeliveredRequest extends Request implements HasBody
 
     public function resolveEndpoint(): string
     {
-        return "/documents/{$this->document}/delivered";
+        return '/documents/' . self::pathParameter($this->document, 'document ID') . '/delivered';
     }
 
     protected function defaultBody(): array

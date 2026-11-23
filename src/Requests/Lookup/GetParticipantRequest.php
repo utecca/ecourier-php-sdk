@@ -7,12 +7,15 @@ namespace Ecourier\Requests\Lookup;
 use Ecourier\Data\Responses\ParticipantLookupData;
 use Ecourier\Enums\Channel;
 use Ecourier\Enums\IdentifierScheme;
+use Ecourier\Requests\Concerns\EncodesPathParameters;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 
 class GetParticipantRequest extends Request
 {
+    use EncodesPathParameters;
+
     protected Method $method = Method::GET;
 
     public function __construct(
@@ -23,7 +26,7 @@ class GetParticipantRequest extends Request
 
     public function resolveEndpoint(): string
     {
-        return "/lookup/participants/{$this->channel->value}/{$this->scheme->value}/{$this->participantId}";
+        return "/lookup/participants/{$this->channel->value}/{$this->scheme->value}/" . self::pathParameter($this->participantId, 'participant ID');
     }
 
     public function createDtoFromResponse(Response $response): ParticipantLookupData
