@@ -19,6 +19,31 @@ function fakeParticipantMockClient(): MockClient
     ]);
 }
 
+it('authenticates with the api key as a bearer token', function () {
+    $mockClient = fakeParticipantMockClient();
+
+    $connector = new EcourierConnector(apiKey: 'pk_test_fake');
+    $connector->withMockClient($mockClient);
+
+    $response = $connector->participants()->get('0101knwp96k3ggvkra831yrd77ghi');
+
+    expect($response->getPendingRequest()->headers()->get('Authorization'))->toBe('Bearer pk_test_fake');
+});
+
+it('keeps the api key out of dumps of the connector', function () {
+    $connector = new EcourierConnector(apiKey: 'pk_test_secret');
+    $connector->withMockClient(fakeParticipantMockClient());
+
+    expect(print_r($connector, true))->not->toContain('pk_test_secret')
+        ->and(var_export($connector, true))->not->toContain('pk_test_secret')
+        // Symfony's dump() and Laravel's dd() read the properties like this, and ignore __debugInfo().
+        ->and(in_array('pk_test_secret', (array) $connector, true))->toBeFalse();
+});
+
+it('cannot be serialized, as that would write out the api key', function () {
+    serialize(new EcourierConnector(apiKey: 'pk_test_secret'));
+})->throws(Exception::class, "Serialization of 'SensitiveParameterValue' is not allowed");
+
 it('sends a descriptive User-Agent header', function () {
     $mockClient = fakeParticipantMockClient();
 

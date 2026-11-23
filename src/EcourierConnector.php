@@ -23,6 +23,8 @@ use Saloon\Http\Connector;
 use Saloon\Http\Response;
 use Saloon\Traits\Plugins\AcceptsJson;
 use Saloon\Traits\Plugins\HasTimeout;
+use SensitiveParameter;
+use SensitiveParameterValue;
 
 class EcourierConnector extends Connector
 {
@@ -32,9 +34,15 @@ class EcourierConnector extends Connector
     protected int $connectTimeout = 30;
     protected int $requestTimeout = 60;
 
-    public function __construct(
-        private readonly string $apiKey,
-    ) {}
+    /**
+     * Wrapped so the key stays out of print_r(), var_dump() and dump() output of the connector.
+     */
+    private readonly SensitiveParameterValue $apiKey;
+
+    public function __construct(#[SensitiveParameter] string $apiKey)
+    {
+        $this->apiKey = new SensitiveParameterValue($apiKey);
+    }
 
     public function resolveBaseUrl(): string
     {
@@ -43,7 +51,7 @@ class EcourierConnector extends Connector
 
     protected function defaultAuth(): TokenAuthenticator
     {
-        return new TokenAuthenticator($this->apiKey);
+        return new TokenAuthenticator($this->apiKey->getValue());
     }
 
     protected function defaultHeaders(): array

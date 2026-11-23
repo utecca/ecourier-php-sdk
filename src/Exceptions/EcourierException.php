@@ -7,23 +7,47 @@ namespace Ecourier\Exceptions;
 use Exception;
 use JsonException;
 use Saloon\Http\Response;
+use SensitiveParameterValue;
 
 /**
  * @phpstan-consistent-constructor
  */
 class EcourierException extends Exception
 {
+    /**
+     * The response holds the request, and with it the API key. It is wrapped so a dumped exception does not show it.
+     */
+    private readonly SensitiveParameterValue $response;
+
     public function __construct(
         string $message,
-        private readonly Response $response,
+        Response $response,
         int $code = 0,
     ) {
         parent::__construct($message, $code);
+
+        $this->response = new SensitiveParameterValue($response);
     }
 
     public function getResponse(): Response
     {
-        return $this->response;
+        return $this->response->getValue();
+    }
+
+    /**
+     * Dumps the exception as usual, but without the arguments of the stack frames: they hold the request as well.
+     *
+     * @return array<string, mixed>
+     */
+    public function __debugInfo(): array
+    {
+        $properties = (array) $this;
+        $properties["\0Exception\0trace"] = array_map(
+            fn(array $frame) => array_diff_key($frame, ['args' => true]),
+            $this->getTrace(),
+        );
+
+        return $properties;
     }
 
     /**
@@ -31,7 +55,7 @@ class EcourierException extends Exception
      */
     public function getErrorCode(): ?string
     {
-        $code = static::decodeBody($this->response)['code'] ?? null;
+        $code = static::decodeBody($this->getResponse())['code'] ?? null;
 
         return is_string($code) ? $code : null;
     }

@@ -195,3 +195,33 @@ it('has no error code when the api gives none', function () {
 
     $this->fail('Expected an EcourierException.');
 });
+
+it('keeps the api key out of dumps of an exception', function () {
+    $connector = new EcourierConnector(apiKey: 'pk_test_secret');
+    $connector->withMockClient(new MockClient([
+        GetCompanyRequest::class => MockResponse::make(body: ['message' => 'Not found.'], status: 404),
+    ]));
+
+    // Stack frames then carry their arguments, which include the request and its Authorization header.
+    $ignoreArgs = ini_set('zend.exception_ignore_args', '0');
+
+    try {
+        $connector->companies()->get('comp_01abc');
+    } catch (NotFoundException $e) {
+        $dump = print_r($e, true);
+
+        expect($dump)->not->toContain('pk_test_secret')
+            ->and($dump)->toContain('Not found.')
+            ->and($dump)->toContain('[function] => fromResponse')
+            // Symfony's dump() and Laravel's dd() read the properties like this, and ignore __debugInfo().
+            ->and(print_r(array_diff_key((array) $e, ["\0Exception\0trace" => true]), true))->not->toContain('pk_test_secret')
+            ->and($e->getResponse()->status())->toBe(404)
+            ->and($e->getTrace()[0]['args'] ?? [])->not->toBe([]);
+
+        return;
+    } finally {
+        ini_set('zend.exception_ignore_args', (string) $ignoreArgs);
+    }
+
+    test()->fail('Expected a NotFoundException.');
+});
