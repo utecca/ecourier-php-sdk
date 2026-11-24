@@ -681,6 +681,12 @@ try {
 }
 ```
 
+The response from `getResponse()` holds the request that was sent, but its `Authorization` header shows the API key masked, as in `Bearer pk_live_…a1b2`. You can dump or log exceptions and responses, including the raw response from `get()`, without writing out the key.
+
+The connector keeps the key out of `print_r()`, `var_dump()` and `dump()` too, and cannot be serialized. To use the SDK from a queued job, create the connector inside the job instead of passing it in.
+
+A `Saloon\Exceptions\Request\FatalRequestException`, thrown when the API cannot be reached at all, comes from Saloon and still holds the unmasked request.
+
 ---
 
 ## Testing & Mocking
