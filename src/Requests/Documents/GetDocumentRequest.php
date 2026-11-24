@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Ecourier\Requests\Documents;
 
 use Ecourier\Data\Responses\DocumentData;
+use Ecourier\Requests\Concerns\EncodesPathParameters;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 
 class GetDocumentRequest extends Request
 {
+    use EncodesPathParameters;
+
     protected Method $method = Method::GET;
 
     public function __construct(
@@ -19,7 +22,7 @@ class GetDocumentRequest extends Request
 
     public function resolveEndpoint(): string
     {
-        return "/documents/{$this->document}";
+        return '/documents/' . self::pathParameter($this->document, 'document ID');
     }
 
     public function createDtoFromResponse(Response $response): DocumentData

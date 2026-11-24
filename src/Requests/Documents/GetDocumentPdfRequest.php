@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Ecourier\Requests\Documents;
 
 use Ecourier\Enums\Locale;
+use Ecourier\Requests\Concerns\EncodesPathParameters;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 
 class GetDocumentPdfRequest extends Request
 {
+    use EncodesPathParameters;
+
     protected Method $method = Method::GET;
 
     public function __construct(
@@ -19,7 +22,7 @@ class GetDocumentPdfRequest extends Request
 
     public function resolveEndpoint(): string
     {
-        return "/documents/{$this->document}/pdf";
+        return '/documents/' . self::pathParameter($this->document, 'document ID') . '/pdf';
     }
 
     protected function defaultHeaders(): array

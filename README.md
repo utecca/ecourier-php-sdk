@@ -646,7 +646,7 @@ The SDK throws typed exceptions for every error case — no checking status code
 | `FailedDependencyException` | An upstream registry or network lookup failed |
 | `EcourierException` | Any other error, such as a server error or a non-JSON response like a proxy's 502 page |
 
-All exceptions extend `EcourierException`, so you can catch broadly or narrowly, and `getResponse()` gives you the HTTP response, including its status code. The one exception is `MissingResponseFieldException`: the request succeeded, but the response is missing a field this version of the SDK requires. It extends `UnexpectedValueException` and has `$dataClass` and `$field` properties.
+All exceptions extend `EcourierException`, so you can catch broadly or narrowly, and `getResponse()` gives you the HTTP response, including its status code. The one exception is `MissingResponseFieldException`: the request succeeded, but the response is missing a field this version of the SDK requires. It extends `UnexpectedValueException` and has `$dataClass` and `$field` properties. An ID or lookup identifier that is empty, `.` or `..` throws `InvalidArgumentException` before any request is made.
 
 ```php
 use Ecourier\Exceptions\AuthenticationException;
