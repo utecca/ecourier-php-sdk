@@ -681,6 +681,10 @@ try {
 }
 ```
 
+The response from `getResponse()` holds the request that was sent, and with it the `Authorization` header and your API key. Don't dump, log or serialize the exception or its response in full where others can read it. Log the message, status and body instead. The same goes for the raw response from `get()`.
+
+The connector itself keeps the key out of `print_r()`, `var_dump()` and `dump()`, and cannot be serialized. To use the SDK from a queued job, create the connector inside the job instead of passing it in.
+
 ---
 
 ## Testing & Mocking
