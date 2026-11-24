@@ -195,3 +195,31 @@ it('has no error code when the api gives none', function () {
 
     $this->fail('Expected an EcourierException.');
 });
+
+it('keeps the api key out of dumps of an exception, and keeps the rest', function () {
+    $connector = new EcourierConnector(apiKey: 'pk_test_0123456789abcdef');
+    $connector->withMockClient(new MockClient([
+        GetCompanyRequest::class => MockResponse::make(body: ['message' => 'Not found.'], status: 404),
+    ]));
+
+    // Stack frames then carry their arguments, which include the response and its request.
+    $ignoreArgs = ini_set('zend.exception_ignore_args', '0');
+
+    try {
+        $connector->companies()->get('comp_01abc');
+    } catch (NotFoundException $e) {
+        $dump = print_r($e, true);
+
+        expect($dump)->not->toContain('0123456789abcdef')
+            ->and($dump)->toContain('Bearer pk_test_…cdef')
+            ->and($dump)->toContain('Not found.')
+            ->and($dump)->toContain('comp_01abc')
+            ->and($e->getTrace()[0]['args'] ?? [])->not->toBe([]);
+
+        return;
+    } finally {
+        ini_set('zend.exception_ignore_args', (string) $ignoreArgs);
+    }
+
+    $this->fail('Expected a NotFoundException.');
+});

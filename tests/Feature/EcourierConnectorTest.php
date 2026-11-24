@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use Composer\InstalledVersions;
 use Ecourier\EcourierConnector;
+use Ecourier\EcourierResponse;
 use Ecourier\Requests\Participants\GetParticipantRequest;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\PendingRequest;
 
 function fakeParticipantMockClient(): MockClient
 {
@@ -20,14 +22,38 @@ function fakeParticipantMockClient(): MockClient
 }
 
 it('authenticates with the api key as a bearer token', function () {
-    $mockClient = fakeParticipantMockClient();
+    $sent = null;
 
-    $connector = new EcourierConnector(apiKey: 'pk_test_fake');
-    $connector->withMockClient($mockClient);
+    $connector = new EcourierConnector(apiKey: 'pk_test_0123456789abcdef');
+    $connector->withMockClient(new MockClient([
+        GetParticipantRequest::class => function (PendingRequest $pendingRequest) use (&$sent) {
+            $sent = $pendingRequest->createPsrRequest()->getHeaderLine('Authorization');
+
+            return MockResponse::make(
+                body: file_get_contents(__DIR__ . '/../Fixtures/participant.json'),
+                headers: ['Content-Type' => 'application/json'],
+            );
+        },
+    ]));
+
+    $connector->participants()->get('0101knwp96k3ggvkra831yrd77ghi');
+
+    expect($sent)->toBe('Bearer pk_test_0123456789abcdef');
+});
+
+it('masks the api key in the request of a response', function () {
+    $connector = new EcourierConnector(apiKey: 'pk_test_0123456789abcdef');
+    $connector->withMockClient(fakeParticipantMockClient());
 
     $response = $connector->participants()->get('0101knwp96k3ggvkra831yrd77ghi');
+    $buffered = $response->withBufferedBody($response->body());
 
-    expect($response->getPendingRequest()->headers()->get('Authorization'))->toBe('Bearer pk_test_fake');
+    expect($response)->toBeInstanceOf(EcourierResponse::class)
+        ->and($response->getPsrRequest()->getHeaderLine('Authorization'))->toBe('Bearer pk_test_…cdef')
+        ->and($response->getPendingRequest()->headers()->get('Authorization'))->toBe('Bearer pk_test_…cdef')
+        ->and($buffered->getPsrRequest()->getHeaderLine('Authorization'))->toBe('Bearer pk_test_…cdef')
+        ->and(print_r($response, true))->not->toContain('0123456789abcdef')
+        ->and(print_r($response, true))->toContain('0101knwp96k3ggvkra831yrd77ghi');
 });
 
 it('keeps the api key out of dumps of the connector', function () {

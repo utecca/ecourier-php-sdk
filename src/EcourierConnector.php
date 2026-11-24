@@ -34,9 +34,8 @@ class EcourierConnector extends Connector
     protected int $connectTimeout = 30;
     protected int $requestTimeout = 60;
 
-    /**
-     * Wrapped so the key stays out of print_r(), var_dump() and dump() output of the connector.
-     */
+    protected ?string $response = EcourierResponse::class;
+
     private readonly SensitiveParameterValue $apiKey;
 
     public function __construct(#[SensitiveParameter] string $apiKey)
