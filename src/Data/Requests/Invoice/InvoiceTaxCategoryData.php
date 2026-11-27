@@ -12,6 +12,7 @@ final readonly class InvoiceTaxCategoryData
         public TaxCategoryCode $code,
         public ?string $percent = null,
         public ?string $exemptionReason = null,
+        public ?string $taxAmount = null,
     ) {}
 
     public function toArray(): array
@@ -24,6 +25,10 @@ final readonly class InvoiceTaxCategoryData
 
         if ($this->exemptionReason !== null) {
             $data['exemption_reason'] = $this->exemptionReason;
+        }
+
+        if ($this->taxAmount !== null) {
+            $data['tax_amount'] = $this->taxAmount;
         }
 
         return $data;
